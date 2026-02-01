@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agent-First SERP Gateway</title>
+    <link rel="stylesheet" href="/static/dist/assets/main.css">
+</head>
+
+<body>
+
+    <header>
+        <h1>Agent-First SERP Gateway</h1>
+        <div class="tagline">Context Extraction for LLMs</div>
+    </header>
+
+    <div class="container">
+        <!-- Control Panel -->
+        <div class="control-panel">
+            <form id="searchForm" class="input-group">
+                <div class="field">
+                    <label>Query or URL</label>
+                    <div class="search-box">
+                        <input type="text" id="queryInput" placeholder="Enter a topic or paste a URL..."
+                            onkeydown="if(event.key === 'Enter') performSearch()">
+                    </div>
+                </div>
+                <div class="field">
+                    <label>Region</label>
+                    <select id="region">
+                        <option value="us">United States</option>
+                        <option value="uk">United Kingdom</option>
+                        <option value="in">India</option>
+                        <option value="de">Germany</option>
+                    </select>
+                </div>
+                <div class="field">
+                    <label>Language</label>
+                    <select id="language">
+                        <option value="en">English</option>
+                        <option value="es">Spanish</option>
+                        <option value="fr">French</option>
+                    </select>
+                </div>
+                <div class="field">
+                    <label>&nbsp;</label>
+                    <button type="submit" id="submitBtn">
+                        <div class="spinner" id="spinner"></div>
+                        <span>Run Extraction</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Results Area -->
+        <div class="results-area">
+            <!-- Left: Markdown (LLM Context) -->
+            <div class="panel">
+                <div class="panel-header">
+                    <span>LLM-Ready Context (Markdown)</span>
+                    <span class="badge token-stat" id="tokenStat">0 Tokens</span>
+                </div>
+                <div class="panel-content" id="markdownOutput">// Waiting for input...</div>
+            </div>
+
+            <!-- Right: Raw JSON -->
+            <div class="panel">
+                <div class="panel-header">
+                    <span>Structured API Response (JSON)</span>
+                    <span class="badge" id="statusBadge">Idle</span>
+                </div>
+                <div class="panel-content" id="jsonOutput">// Waiting for input...</div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="/static/dist/assets/main.js"></script>
+</body>
+
+</html>

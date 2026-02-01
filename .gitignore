@@ -1,0 +1,22 @@
+__pycache__/
+*.pyc
+.env
+.venv/
+env/
+venv/
+.DS_Store
+.idea/
+.vscode/
+
+# Local Env
+pro_venv/
+*.log
+
+# Frontend / Node
+node_modules/
+frontend/node_modules/
+frontend/dist/
+npm-debug.log
+
+# Build Artifacts
+serp-to-context-api/app/static/dist/

@@ -1,0 +1,34 @@
+# Git
+.git
+.gitignore
+
+# Environment
+.env
+.env.*
+!.env.example
+
+# Python
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.venv/
+pro_venv/
+pip-log.txt
+.pytest_cache/
+
+# Node / Frontend
+node_modules/
+frontend/node_modules/
+frontend/dist/
+npm-debug.log
+
+# We don't need the source frontend in the production API container
+# (Assuming the API container only needs the built assets in app/static/dist)
+frontend/
+
+# Local Build Artifacts (if you want to force clean builds)
+# serp-to-context-api/app/static/dist/

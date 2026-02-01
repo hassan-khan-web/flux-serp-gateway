@@ -1,0 +1,9 @@
+fastapi
+uvicorn
+requests
+httpx
+beautifulsoup4
+redis
+python-dotenv
+scikit-learn
+aiofiles
