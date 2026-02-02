@@ -7,3 +7,5 @@ redis
 python-dotenv
 scikit-learn
 aiofiles
+trafilatura
+lxml_html_clean

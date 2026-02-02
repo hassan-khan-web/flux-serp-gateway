@@ -13,6 +13,7 @@ class OrganicResult(BaseModel):
     title: str
     url: str
     snippet: str
+    score: Optional[float] = 0.0
 
 class SearchResponse(BaseModel):
     query: str

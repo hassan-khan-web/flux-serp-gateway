@@ -70,8 +70,14 @@ class FormatterService:
             md.append(f"## AI Overview\n> {ai_overview}\n")
             md.append("---\n")
             
-        for idx, res in enumerate(results, 1):
-            md.append(f"## {idx}. {res.get('title', 'No Title')}")
+        # Sorting results by Score (Credibility) Descending
+        sorted_results = sorted(results, key=lambda x: x.get("score", 0.0), reverse=True)
+            
+        for idx, res in enumerate(sorted_results, 1):
+            score = res.get("score", 0.0)
+            score_label = f"(Credibility Score: {score})" if score > 0 else ""
+            
+            md.append(f"## {idx}. {res.get('title', 'No Title')} {score_label}")
             md.append(f"URL: {res.get('url', 'No URL')}")
             md.append(f"Snippet: {res.get('snippet', '')}\n")
             
