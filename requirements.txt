@@ -9,3 +9,4 @@ scikit-learn
 aiofiles
 trafilatura
 lxml_html_clean
+sentence-transformers

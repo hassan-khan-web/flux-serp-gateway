@@ -14,6 +14,7 @@ class OrganicResult(BaseModel):
     url: str
     snippet: str
     score: Optional[float] = 0.0
+    embedding: Optional[List[float]] = None
 
 class SearchResponse(BaseModel):
     query: str

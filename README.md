@@ -1,6 +1,12 @@
 # Agent-First SERP Gateway
 
-A resilient, token-optimized Search-to-LLM context API. This project is designed to scrape Google Search results, extract key information (including AI Overviews), and format it into clean Markdown consumed by Large Language Models. It features a hybrid scraping strategy, intelligent parsing, deduplication, and caching to ensure high-quality context retrieval.
+A resilient, token-optimized Search-to-LLM context API. This project is designed to scrape Google Search results, extract key information (including AI Overviews), and format it into clean Markdown consumed by Large Language Models. It features:
+*   **Agent-Optimized Parsers**: Extracts clean text, removes ads/modals, and formats as Markdown.
+*   **Vector Embeddings (RAG-Ready)**: Optional output format that returns text chunks extracted and embedded (using `all-MiniLM-L6-v2`), ready for vector database insertion.
+*   **Source Credibility Scoring**: Automatically scores search results (Tier 1-4) based on domain reputation (e.g., Arxiv > Commercial Blogs).
+*   **Hybrid Scraping**: Falls back to direct URL scraping (ZenRows/ScrapingBee compatible) for deep content.
+*   **Intelligent Deduplication**: Removes redundant information across multiple search results.
+*   **Robust Caching**: Utilizes Redis to store results and optimize API calls.
 
 ## Project Structure
 

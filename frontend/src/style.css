@@ -27,7 +27,7 @@ body {
 }
 
 .container {
-    max-width: 1200px;
+    max-width: 95%;
     width: 100%;
     display: grid;
     grid-template-columns: 1fr;
@@ -63,7 +63,7 @@ h1 {
 
 .input-group {
     display: grid;
-    grid-template-columns: 3fr 1fr 1fr auto;
+    grid-template-columns: 3fr 1fr 1fr 1fr auto auto;
     gap: 1rem;
     align-items: end;
 }
