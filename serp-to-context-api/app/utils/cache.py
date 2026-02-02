@@ -16,16 +16,16 @@ class CacheService:
             logger.error(f"Failed to connect to Redis: {e}")
             self.client = None
 
-    def _generate_key(self, query: str, region: Optional[str] = None, language: Optional[str] = None) -> str:
-        key_content = f"{query}:{region}:{language}"
+    def _generate_key(self, query: str, region: Optional[str] = None, language: Optional[str] = None, limit: Optional[int] = 10) -> str:
+        key_content = f"{query}:{region}:{language}:{limit}"
         return hashlib.sha256(key_content.encode()).hexdigest()
 
-    def get(self, query: str, region: Optional[str] = None, language: Optional[str] = None) -> Optional[dict]:
+    def get(self, query: str, region: Optional[str] = None, language: Optional[str] = None, limit: Optional[int] = 10) -> Optional[dict]:
         if not self.client:
             return None
         
         try:
-            key = self._generate_key(query, region, language)
+            key = self._generate_key(query, region, language, limit)
             cached_data = self.client.get(key)
             if cached_data:
                 logger.info(f"Cache hit for query: {query}")
@@ -35,12 +35,12 @@ class CacheService:
             logger.error(f"Cache get error: {e}")
             return None
 
-    def set(self, query: str, data: dict, region: Optional[str] = None, language: Optional[str] = None):
+    def set(self, query: str, data: dict, region: Optional[str] = None, language: Optional[str] = None, limit: Optional[int] = 10):
         if not self.client:
             return
 
         try:
-            key = self._generate_key(query, region, language)
+            key = self._generate_key(query, region, language, limit)
             self.client.setex(key, self.ttl, json.dumps(data))
             logger.info(f"Cache set for query: {query}")
         except Exception as e:

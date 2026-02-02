@@ -33,6 +33,8 @@ async function performSearch(): Promise<void> {
     const query = queryInput.value.trim();
     const region = (document.getElementById('region') as HTMLSelectElement).value;
     const language = (document.getElementById('language') as HTMLSelectElement).value;
+    const limitInput = document.getElementById('limit') as HTMLInputElement;
+    const limit = limitInput ? parseInt(limitInput.value) : 10;
 
     if (!query) {
         mdOutput.textContent = "Please enter a query or URL.";
@@ -58,6 +60,7 @@ async function performSearch(): Promise<void> {
                 mode: mode,
                 region: region,
                 language: language,
+                limit: limit,
                 output_format: 'markdown'
             })
         });

@@ -12,7 +12,7 @@ router = APIRouter()
 async def search_endpoint(request: SearchRequest):
     try:
         # Check Cache
-        cached_data = cache.get(request.query, request.region, request.language)
+        cached_data = cache.get(request.query, request.region, request.language, request.limit)
         if cached_data:
             return SearchResponse(**cached_data, cached=True)
 
@@ -27,7 +27,7 @@ async def search_endpoint(request: SearchRequest):
                 parsed_data["organic_results"][0]["url"] = request.query
         else:
             # Standard Search
-            content = await scraper.fetch_results(request.query, request.region, request.language)
+            content = await scraper.fetch_results(request.query, request.region, request.language, request.limit)
             if not content:
                 raise HTTPException(status_code=500, detail="Failed to fetch search results")
             parsed_data = parser.parse(content)
@@ -46,7 +46,7 @@ async def search_endpoint(request: SearchRequest):
         
         # Cache Result (only if we have results)
         if response_data["organic_results"]:
-            cache.set(request.query, response_data, request.region, request.language)
+            cache.set(request.query, response_data, request.region, request.language, request.limit)
 
         return SearchResponse(**response_data, cached=False)
 

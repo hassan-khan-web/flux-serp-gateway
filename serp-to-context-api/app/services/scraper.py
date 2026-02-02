@@ -44,10 +44,10 @@ class ScraperService:
             logger.error(f"Tavily Extract error: {e}")
         return None
 
-    async def _fetch_tavily(self, query: str) -> Optional[Dict]:
+    async def _fetch_tavily(self, query: str, limit: int = 10) -> Optional[Dict]:
         """Fetch results from Tavily Search API."""
         try:
-            logger.info("Attempting Tavily fetch...")
+            logger.info(f"Attempting Tavily fetch with limit={limit}...")
             async with httpx.AsyncClient(timeout=30.0) as client:
                 response = await client.post(
                     "https://api.tavily.com/search",
@@ -57,7 +57,7 @@ class ScraperService:
                         "search_depth": "advanced",
                         "include_answer": True,
                         "include_images": False,
-                        "max_results": 10
+                        "max_results": limit
                     }
                 )
                 if response.status_code == 200:
@@ -90,14 +90,14 @@ class ScraperService:
             
         return html
 
-    async def fetch_results(self, query: str, region: str = "us", language: str = "en") -> Optional[Union[str, Dict]]:
+    async def fetch_results(self, query: str, region: str = "us", language: str = "en", limit: int = 10) -> Optional[Union[str, Dict]]:
         # Formulate search URL
-        params = {"q": query, "gl": region, "hl": language}
+        params = {"q": query, "gl": region, "hl": language, "num": limit}
         search_url = f"https://www.google.com/search?{urllib.parse.urlencode(params)}"
         
         # Priority 1: Tavily (Official API, most reliable)
         if self.tavily_key:
-            data = await self._fetch_tavily(query)
+            data = await self._fetch_tavily(query, limit)
             if data: return data
 
         # Try providers in order

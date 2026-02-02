@@ -7,6 +7,7 @@ class SearchRequest(BaseModel):
     language: Optional[str] = "en"
     output_format: Optional[str] = "markdown"
     mode: Optional[str] = "search"  # "search" or "scrape"
+    limit: Optional[int] = 10
 
 class OrganicResult(BaseModel):
     title: str
