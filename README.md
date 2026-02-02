@@ -4,8 +4,6 @@ A resilient, token-optimized Search-to-LLM context API. This project is designed
 
 ## Project Structure
 
-## Project Structure
-
 ```text
 Flux/
 ├── .env.example              # Template for environment variables (API keys, Redis URL)
