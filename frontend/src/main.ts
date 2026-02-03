@@ -1,4 +1,5 @@
 import './style.css'
+import { parse } from './marked.js';
 
 const form = document.getElementById('searchForm') as HTMLFormElement;
 const submitBtn = document.getElementById('submitBtn') as HTMLButtonElement;
@@ -7,35 +8,114 @@ const btnText = submitBtn.querySelector('span') as HTMLElement;
 
 const mdOutput = document.getElementById('markdownOutput') as HTMLElement;
 const jsonOutput = document.getElementById('jsonOutput') as HTMLElement;
+const vectorOutput = document.getElementById('vectorOutput') as HTMLElement;
+
+// Get Panels (Assuming structure: .panel > .panel-content#id)
+const mdPanel = mdOutput.closest('.panel') as HTMLElement;
+const jsonPanel = jsonOutput.closest('.panel') as HTMLElement;
+const vectorPanel = vectorOutput.closest('.panel') as HTMLElement;
+
 const tokenStat = document.getElementById('tokenStat') as HTMLElement;
+const vectorStat = document.getElementById('vectorStat') as HTMLElement;
 const statusBadge = document.getElementById('statusBadge') as HTMLElement;
 const queryInput = document.getElementById('queryInput') as HTMLInputElement;
 
-// Prevent default form submission and run search
-form.addEventListener('submit', async (e: Event) => {
-    e.preventDefault();
-    performSearch();
-});
+// Custom Dropdown Elements
+const formatDropdownBtn = document.getElementById('formatDropdownBtn') as HTMLElement;
+const formatDropdownMenu = document.getElementById('formatDropdownMenu') as HTMLElement;
+const formatLabel = document.getElementById('selectedFormatLabel') as HTMLElement;
+const formatOptions = document.getElementsByName('format_option') as NodeListOf<HTMLInputElement>;
 
-// Since we removed inline handlers, we should ensure the input also works if someone hits enter (handled by form submit usually, but let's be safe)
-// Actually, form submit catches the enter key too.
+let currentFormat = 'all';
+
+// Dropdown Logic
+if (formatDropdownBtn && formatDropdownMenu) {
+    formatDropdownBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        formatDropdownMenu.classList.toggle('show');
+    });
+
+    document.addEventListener('click', () => {
+        formatDropdownMenu.classList.remove('show');
+    });
+
+    formatDropdownMenu.addEventListener('click', (e) => {
+        e.stopPropagation();
+    });
+}
+
+// Option Change Logic
+if (formatOptions) {
+    formatOptions.forEach(opt => {
+        opt.addEventListener('change', () => {
+            if (opt.checked) {
+                currentFormat = opt.value;
+                // Update Label
+                const labelText = opt.nextElementSibling?.textContent || 'Display All';
+                if (formatLabel) formatLabel.textContent = labelText;
+
+                updatePanelVisibility(currentFormat);
+
+                if (formatDropdownMenu) formatDropdownMenu.classList.remove('show');
+            }
+        });
+    });
+}
+
+function updatePanelVisibility(format: string) {
+    // Safety check if panels exist
+    if (!mdPanel || !jsonPanel || !vectorPanel) return;
+
+    if (format === 'all') {
+        mdPanel.classList.remove('hidden');
+        jsonPanel.classList.remove('hidden');
+        vectorPanel.classList.remove('hidden');
+        return;
+    }
+
+    // Hide all
+    mdPanel.classList.add('hidden');
+    jsonPanel.classList.add('hidden');
+    vectorPanel.classList.add('hidden');
+
+    // Show specific
+    if (format === 'markdown') mdPanel.classList.remove('hidden');
+    if (format === 'json') jsonPanel.classList.remove('hidden');
+    if (format === 'vector') vectorPanel.classList.remove('hidden');
+}
+
+
+// Prevent default form submission and run search
+if (form) {
+    form.addEventListener('submit', async (e: Event) => {
+        e.preventDefault();
+        performSearch();
+    });
+}
 
 async function performSearch(): Promise<void> {
     // UI Loading State
     submitBtn.disabled = true;
     spinner.style.display = 'block';
     btnText.textContent = 'Processing...';
-    mdOutput.textContent = 'Fetching and parsing data...';
-    jsonOutput.textContent = 'Waiting for response...';
-    tokenStat.textContent = '0 Tokens';
+
+    // Status updates
+    const loadingText = 'Fetching data...';
+    if (!mdPanel.classList.contains('hidden')) mdOutput.textContent = loadingText;
+    if (!jsonPanel.classList.contains('hidden')) jsonOutput.textContent = loadingText;
+    tokenStat.textContent = '...';
     statusBadge.textContent = 'Loading...';
 
     const query = queryInput.value.trim();
     const region = (document.getElementById('region') as HTMLSelectElement).value;
     const language = (document.getElementById('language') as HTMLSelectElement).value;
     const limitInput = document.getElementById('limit') as HTMLInputElement;
-    const limit = limitInput ? parseInt(limitInput.value) : 10;
-    const outputFormat = (document.getElementById('output_format') as HTMLSelectElement).value;
+    let limit = limitInput ? parseInt(limitInput.value) : 10;
+    if (limit > 50) limit = 50;
+
+    // Map currentFormat to API format
+    // Sending 'json' ensures we get rich data (organic_results) + formatted_output.
+    const apiFormat = currentFormat === 'all' ? 'json' : currentFormat;
 
     if (!query) {
         mdOutput.textContent = "Please enter a query or URL.";
@@ -47,8 +127,6 @@ async function performSearch(): Promise<void> {
         return;
     }
 
-    // Auto-detect URL
-    // Simple regex: starts with http:// or https://
     const isUrl = /^(http|https):\/\/[^ "]+$/.test(query);
     const mode = isUrl ? 'scrape' : 'search';
 
@@ -62,23 +140,48 @@ async function performSearch(): Promise<void> {
                 region: region,
                 language: language,
                 limit: limit,
-                output_format: outputFormat
+                output_format: apiFormat
             })
         });
 
         const data = await response.json();
 
         // Update UI
-        mdOutput.textContent = data.formatted_output || "No output generated.";
+        const mdContent = data.formatted_output || "No output generated.";
+        try {
+            // Render Markdown for proper tables
+            mdOutput.innerHTML = parse(mdContent) as string;
+        } catch (e) {
+            console.error("Markdown parse error:", e);
+            mdOutput.textContent = mdContent;
+        }
+
         jsonOutput.textContent = JSON.stringify(data, null, 2);
 
+        // Vector Output Logic
+        if (data.organic_results && data.organic_results.length > 0) {
+            const vectors = data.organic_results.filter((r: any) => r.embedding);
+            if (vectors.length > 0) {
+                vectorStat.textContent = `${vectors.length} Vecs`;
+                const sample = vectors.map((r: any, i: number) =>
+                    `[Result ${i + 1}] Dims: ${r.embedding.length}\n[${r.embedding.slice(0, 5).join(', ')}...]`
+                ).join('\n\n');
+                vectorOutput.textContent = sample;
+            } else {
+                vectorStat.textContent = "0 Vecs";
+                vectorOutput.textContent = "No vectors returned.";
+            }
+        } else {
+            vectorOutput.textContent = "No results.";
+        }
+
         if (data.token_estimate) {
-            tokenStat.textContent = `~${data.token_estimate} Tokens Solved`;
+            tokenStat.textContent = `~${data.token_estimate} Tokens`;
         }
 
         statusBadge.textContent = response.ok ? (data.cached ? 'Cached ⚡' : 'Live 🟢') : 'Error 🔴';
 
-    } catch (err) {
+    } catch (err: any) {
         mdOutput.textContent = "Error connecting to API.";
         jsonOutput.textContent = err?.toString() || 'Unknown Error';
         statusBadge.textContent = 'Connection Fail';
