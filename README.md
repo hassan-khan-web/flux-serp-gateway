@@ -2,7 +2,8 @@
 
 A resilient, token-optimized Search-to-LLM context API. This project is designed to scrape Google Search results, extract key information (including AI Overviews), and format it into clean Markdown consumed by Large Language Models. It features:
 *   **Agent-Optimized Parsers**: Extracts clean text, removes ads/modals, and formats as Markdown.
-*   **Vector Embeddings (RAG-Ready)**: Optional output format that returns text chunks extracted and embedded (using `all-MiniLM-L6-v2`), ready for vector database insertion.
+*   **Multi-View Interface**: dynamic UI that allows users to view **Markdown context**, **JSON structure**, and **Vector Embeddings** simultaneously or individually with a "Display All" mode.
+*   **Vector Embeddings (RAG-Ready)**: Real-time visualization of 384-dimensional vectors (using `all-MiniLM-L6-v2`) for every search result, ready for vector database insertion.
 *   **Source Credibility Scoring**: Automatically scores search results (Tier 1-4) based on domain reputation (e.g., Arxiv > Commercial Blogs).
 *   **Hybrid Scraping**: Falls back to direct URL scraping (ZenRows/ScrapingBee compatible) for deep content.
 *   **Intelligent Deduplication**: Removes redundant information across multiple search results.
