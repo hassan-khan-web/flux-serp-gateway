@@ -85,6 +85,12 @@ ZENROWS_API_KEY=
 TAVILY_API_KEY=
 REDIS_URL=redis://localhost:6379/0
 LOG_LEVEL=INFO
+
+# Database Configuration
+POSTGRES_USER=user
+POSTGRES_PASSWORD=password
+POSTGRES_DB=flux_db
+DATABASE_URL=postgresql://user:password@localhost:5432/flux_db
 ```
 
 ## Running Locally
