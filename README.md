@@ -23,6 +23,7 @@ Flux/
 │   ├── vite.config.ts        # Build config (outputs to backend static folder)
 │   └── src/
 │       ├── main.ts           # Frontend logic (Search UI code, Markdown rendering)
+│       ├── marked.js         # Local Markdown parser library
 │       └── style.css         # Styling for the chat/search interface & tables
 │
 └── serp-to-context-api/      # Core Backend API
@@ -35,7 +36,8 @@ Flux/
         ├── services/
         │   ├── scraper.py    # Hybrid scraping logic (SerpApi/Tavily/ScrapingBee)
         │   ├── parser.py     # HTML parsing & content extraction heuristics
-        │   └── formatter.py  # Cleans & structures data into Markdown for LLMs
+        │   ├── formatter.py  # Cleans & structures data into Markdown for LLMs
+        │   └── embeddings.py # Sentence-BERT embedding generation service
         │
         └── utils/
             ├── cache.py      # Redis caching wrapper implementation
