@@ -13,15 +13,15 @@ A resilient, token-optimized Search-to-LLM context API. This project is designed
 
 ```mermaid
 graph TD
-    A[User Request] --> B{Check Redis Cache}
-    B -- Hit --> C[Return Cached Data]
-    B -- Miss --> D[Hybrid Scraper]
-    D --> E[Parser & Cleaner]
-    E --> F[Formatter (Markdown)]
-    F --> G[Embedding Service]
-    G --> H[Response Builder]
-    H --> I[Save to Redis]
-    I --> J[Final Response]
+    A["User Request"] --> B{"Check Redis Cache"}
+    B -- Hit --> C["Return Cached Data"]
+    B -- Miss --> D["Hybrid Scraper"]
+    D --> E["Parser & Cleaner"]
+    E --> F["Formatter (Markdown)"]
+    F --> G["Embedding Service"]
+    G --> H["Response Builder"]
+    H --> I["Save to Redis"]
+    I --> J["Final Response"]
 ```
 
 1.  **Request**: User sends query + config (Region, Language, Limit).
