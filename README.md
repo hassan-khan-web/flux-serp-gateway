@@ -9,6 +9,30 @@ A resilient, token-optimized Search-to-LLM context API. This project is designed
 *   **Intelligent Deduplication**: Removes redundant information across multiple search results.
 *   **Robust Caching**: Utilizes Redis to store results and optimize API calls.
 
+## Process Pipeline
+
+```mermaid
+graph TD
+    A[User Request] --> B{Check Redis Cache}
+    B -- Hit --> C[Return Cached Data]
+    B -- Miss --> D[Hybrid Scraper]
+    D --> E[Parser & Cleaner]
+    E --> F[Formatter (Markdown)]
+    F --> G[Embedding Service]
+    G --> H[Response Builder]
+    H --> I[Save to Redis]
+    I --> J[Final Response]
+```
+
+1.  **Request**: User sends query + config (Region, Language, Limit).
+2.  **Cache Layer**: Checks Redis for existing identical requests.
+3.  **Scraping**: If fresh, uses the optimal provider (SerpApi/Tavily/etc.) to fetch results.
+4.  **Processing**:
+    *   **Parsing**: Extracts main content, stripping ads and clutter.
+    *   **Formatting**: Converts HTML/Text to clean Markdown.
+    *   **Embedding**: Generates 384-d vectors for each result snippet.
+5.  **Response**: Returns the structured data (JSON), human-readable context (Markdown), and vector arrays.
+
 ## Project Structure
 
 ```text
