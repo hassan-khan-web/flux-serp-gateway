@@ -1,6 +1,17 @@
 version: '3.8'
 
 services:
+  frontend:
+    build:
+      context: ./frontend
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    depends_on:
+      - api
+
   api:
     build: .
     ports:
@@ -16,6 +27,19 @@ services:
       - ./serp-to-context-api:/app/serp-to-context-api
     # Reload command for development
     command: uvicorn serp-to-context-api.main:app --host 0.0.0.0 --port 8000 --reload
+
+  worker:
+    build: .
+    command: celery -A app.worker.celery_app worker --loglevel=info --concurrency=2
+    env_file:
+      - .env
+    environment:
+      - REDIS_URL=redis://redis:6379/0
+      - PYTHONPATH=/app/serp-to-context-api
+    depends_on:
+      - redis
+    volumes:
+      - ./serp-to-context-api:/app/serp-to-context-api
 
   redis:
     image: redis:alpine

@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agent-First SERP Gateway</title>
+    <!-- Vite handles CSS import via main.ts mostly, but if style.css is separate: -->
+    <!--  <link rel="stylesheet" href="/src/style.css"> -->
+    <!-- But relying on main.ts import is better in Vite -->
+</head>
+
+<body>
+
+    <header>
+        <h1>Agent-First SERP Gateway</h1>
+        <div class="tagline">Context Extraction for LLMs</div>
+    </header>
+
+    <div class="container">
+        <!-- Control Panel -->
+        <div class="control-panel">
+            <form id="searchForm" class="input-container">
+                <!-- Row 1: Query + Limit -->
+                <div class="row-1">
+                    <div class="field query-field">
+                        <label>Query or URL</label>
+                        <div class="search-box">
+                            <input type="text" id="queryInput" placeholder="Enter a topic or paste a URL..."
+                                onkeydown="if(event.key === 'Enter') performSearch()">
+                        </div>
+                    </div>
+                    <div class="field limit-field">
+                        <label>Limit (Max 50)</label>
+                        <input type="number" id="limit" value="10" min="1" max="50">
+                    </div>
+                </div>
+
+                <!-- Row 2: Dropdowns + Button -->
+                <div class="row-2">
+                    <div class="dropdown-group">
+                        <div class="field">
+                            <label>Region</label>
+                            <select id="region">
+                                <option value="us">United States</option>
+                                <option value="uk">United Kingdom</option>
+                                <option value="in">India</option>
+                                <option value="de">Germany</option>
+                            </select>
+                        </div>
+                        <div class="field">
+                            <label>Language</label>
+                            <select id="language">
+                                <option value="en">English</option>
+                                <option value="es">Spanish</option>
+                                <option value="fr">French</option>
+                            </select>
+                        </div>
+                        <div class="field">
+                            <label>Format</label>
+                            <div class="custom-dropdown" id="formatDropdown">
+                                <div class="dropdown-toggle" id="formatDropdownBtn">
+                                    <span id="selectedFormatLabel">Display All</span>
+                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M6 9l6 6 6-6" />
+                                    </svg>
+                                </div>
+                                <div class="dropdown-menu" id="formatDropdownMenu">
+                                    <div class="dropdown-item">
+                                        <input type="radio" name="format_option" id="fmt_markdown" value="markdown">
+                                        <label for="fmt_markdown">Markdown</label>
+                                    </div>
+                                    <div class="dropdown-item">
+                                        <input type="radio" name="format_option" id="fmt_json" value="json">
+                                        <label for="fmt_json">JSON</label>
+                                    </div>
+                                    <div class="dropdown-item">
+                                        <input type="radio" name="format_option" id="fmt_vector" value="vector">
+                                        <label for="fmt_vector">Vector</label>
+                                    </div>
+                                    <div class="dropdown-item">
+                                        <input type="radio" name="format_option" id="fmt_all" value="all" checked>
+                                        <label for="fmt_all">Display All</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button type="submit" id="submitBtn" class="run-btn">
+                        <div class="spinner" id="spinner"></div>
+                        <span>Run Extraction</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Results Area -->
+        <div class="results-area">
+            <!-- Left: Markdown (LLM Context) -->
+            <div class="panel">
+                <div class="panel-header">
+                    <span>LLM-Ready Context (Markdown)</span>
+                    <span class="badge token-stat" id="tokenStat">0 Tokens</span>
+                </div>
+                <div class="panel-content" id="markdownOutput">// Waiting for input...</div>
+            </div>
+
+            <div class="panel">
+                <div class="panel-header">
+                    <span>Structured API Response (JSON)</span>
+                    <span class="badge" id="statusBadge">Idle</span>
+                </div>
+                <div class="panel-content" id="jsonOutput">// Waiting for input...</div>
+            </div>
+
+            <!-- Right: Vector Embeddings -->
+            <div class="panel">
+                <div class="panel-header">
+                    <span>Vector Embeddings (RAG)</span>
+                    <span class="badge token-stat" id="vectorStat">0 Vecs</span>
+                </div>
+                <div class="panel-content" id="vectorOutput">// Waiting for input...</div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="/src/main.ts"></script>
+</body>
+
+</html>

@@ -10,3 +10,5 @@ aiofiles
 trafilatura
 lxml_html_clean
 sentence-transformers
+celery
+redis

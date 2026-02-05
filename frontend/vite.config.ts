@@ -6,20 +6,36 @@ const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
 
 export default defineConfig({
+    server: {
+        host: true, // Listen on all addresses, including LAN and public addresses
+        port: 5173,
+        strictPort: true, // Fail if port is already in use
+        proxy: {
+            // Proxy API requests to the backend container
+            '/search': {
+                target: 'http://api:8000',
+                changeOrigin: true,
+                secure: false,
+            },
+            '/tasks': {
+                target: 'http://api:8000',
+                changeOrigin: true,
+                secure: false,
+            },
+            '/health': {
+                target: 'http://api:8000',
+                changeOrigin: true,
+                secure: false,
+            }
+        }
+    },
     build: {
-        // Output compiled assets to the Flask static folder
         outDir: '../serp-to-context-api/app/static/dist',
         emptyOutDir: true,
-
-        // Generate manifest for easier asset linking (optional, but good practice)
         manifest: true,
-
         rollupOptions: {
-            // Use main.ts as the entry point
             input: resolve(__dirname, 'src/main.ts'),
-
             output: {
-                // Ensure consistent naming for easier manual linking if not using manifest
                 entryFileNames: 'assets/[name].js',
                 chunkFileNames: 'assets/[name].js',
                 assetFileNames: 'assets/[name].[ext]'

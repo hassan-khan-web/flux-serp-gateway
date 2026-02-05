@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field
-from typing import Optional, List, Dict, Union
+from typing import Optional, List, Dict, Union, Any
 
 class SearchRequest(BaseModel):
     query: str
@@ -23,3 +23,9 @@ class SearchResponse(BaseModel):
     formatted_output: str
     token_estimate: int
     cached: bool
+
+class TaskResponse(BaseModel):
+    task_id: str
+    status: str
+    result: Optional[SearchResponse] = None
+    error: Optional[str] = None

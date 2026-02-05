@@ -162,7 +162,33 @@ async function performSearch(): Promise<void> {
             })
         });
 
-        const data = await response.json();
+        if (!response.ok) {
+            throw new Error(`Start failed: ${response.statusText}`);
+        }
+
+        const initData = await response.json();
+        const taskId = initData.task_id;
+        let data: any = null;
+
+        // Polling Loop
+        while (true) {
+            await new Promise(resolve => setTimeout(resolve, 2000)); // 2s wait
+
+            const pollRes = await fetch(`/tasks/${taskId}`);
+            if (!pollRes.ok) throw new Error("Polling failed");
+
+            const pollData = await pollRes.json();
+
+            if (pollData.status === 'completed') {
+                data = pollData.result;
+                // Add checks to ensure data isn't null if result is missing (unlikely if status is completed)
+                if (!data) throw new Error("Task completed but no data returned.");
+                break;
+            } else if (pollData.status === 'failed') {
+                throw new Error(pollData.error || "Task failed on server");
+            }
+            // else string is 'pending' or 'processing', continue loop
+        }
 
         // Update UI
         const mdContent = data.formatted_output || "No output generated.";

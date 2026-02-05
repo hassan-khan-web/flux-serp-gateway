@@ -14,34 +14,24 @@ A resilient, token-optimized Search-to-LLM context API. This project is designed
 ```text
 Flux/
 ├── .env.example              # Template for environment variables (API keys, Redis URL)
-├── docker-compose.yml        # Orchestrates Backend (API) + Redis services
-├── Dockerfile                # Production-ready Docker image for FastAPI backend
-├── requirements.txt          # Python dependencies (FastAPI, Uvicorn, BeautifulSoup, etc.)
+├── docker-compose.yml        # Orchestrates Backend, Worker, Frontend, Redis, DB
+├── Dockerfile                # Backend Image
+├── requirements.txt          # Python dependencies (Celery, Redis, FastAPI, etc.)
 │
-├── frontend/                 # Client-side application (Vite + TypeScript)
-│   ├── package.json          # Node dependencies & scripts
-│   ├── vite.config.ts        # Build config (outputs to backend static folder)
+├── frontend/                 # Client-side application
+│   ├── Dockerfile            # Frontend Image (Node.js)
+│   ├── package.json
+│   ├── vite.config.ts        # Proxy configured for Docker
 │   └── src/
-│       ├── main.ts           # Frontend logic (Search UI code, Markdown rendering)
-│       ├── marked.js         # Local Markdown parser library
-│       └── style.css         # Styling for the chat/search interface & tables
+│       ├── main.ts           # Frontend logic (Polling support)
+│       └── ...
 │
 └── serp-to-context-api/      # Core Backend API
-    ├── main.py               # Application entry point & static file serving
+    ├── main.py               # Application entry point
     └── app/
-        ├── api/
-        │   ├── routes.py     # API endpoints (/search, /health)
-        │   └── schemas.py    # Pydantic models for request/response validation
-        │
-        ├── services/
-        │   ├── scraper.py    # Hybrid scraping logic (SerpApi/Tavily/ScrapingBee)
-        │   ├── parser.py     # HTML parsing & content extraction heuristics
-        │   ├── formatter.py  # Cleans & structures data into Markdown for LLMs
-        │   └── embeddings.py # Sentence-BERT embedding generation service
-        │
-        └── utils/
-            ├── cache.py      # Redis caching wrapper implementation
-            └── logger.py     # Centralized logging configuration
+        ├── worker.py         # Celery Worker Configuration
+        ├── api/routes.py     # Async Task Endpoints
+        └── ...
 ```
 ## Process Pipeline
 
@@ -49,13 +39,21 @@ Flux/
 graph TD
     A["User Request"] --> B{"Check Redis Cache"}
     B -- Hit --> C["Return Cached Data"]
-    B -- Miss --> D["Hybrid Scraper"]
-    D --> E["Parser & Cleaner"]
-    E --> F["Formatter (Markdown)"]
-    F --> G["Embedding Service"]
-    G --> H["Response Builder"]
-    H --> I["Save to Redis"]
-    I --> J["Final Response"]
+    B -- Miss --> D["Dispatch Async Task"]
+    D --> E["Return Task ID (202 Accepted)"]
+    
+    subgraph "Celery Worker"
+        F["Queue: Scrape Task"] --> G["Hybrid Scraper"]
+        G --> H["Parser & Cleaner"]
+        H --> I["Formatter (Markdown)"]
+        I --> J["Embedding Service"]
+        J --> K["Save Result to Redis"]
+    end
+
+    subgraph "Frontend Polling"
+        L["Poll Status /tasks/{id}"] -- Ready --> M["Display Result"]
+        L -- Pending --> L
+    end
 ```
 
 1.  **Request**: User sends query + config (Region, Language, Limit).
@@ -142,5 +140,6 @@ docker compose up --build
 
 **Docker Services:**
 
-- **App**: http://localhost:8000
-- **Redis**: localhost:6380 (mapped from container 6379)
+- **Frontend**: http://localhost:5173
+- **API**: http://localhost:8000
+- **Redis**: localhost:6380
