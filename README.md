@@ -39,9 +39,11 @@ Flux/
 graph TD
     A["User Request"] --> B{"Check Redis Cache"}
     B -- Hit --> C["Return Cached Data"]
-    B -- Miss --> D["Dispatch Async Task"]
-    D --> E["Return Task ID (202 Accepted)"]
-    
+    B -- Miss --> D["Dispatch Async Task (Push to Redis)"]
+    D -.->|Task ID| E["Return HTTP 202 Accepted"]
+    D -.->|Queue| F
+    E -.->|Trigger| L
+
     subgraph "Celery Worker"
         F["Queue: Scrape Task"] --> G["Hybrid Scraper"]
         G --> H["Parser & Cleaner"]
@@ -51,8 +53,9 @@ graph TD
     end
 
     subgraph "Frontend Polling"
-        L["Poll Status /tasks/{id}"] -- Ready --> M["Display Result"]
-        L -- Pending --> L
+        L["Poll Status /tasks/{id}"] --> N{"Check Redis"}
+        N -- Ready --> M["Display Result"]
+        N -- Pending --> L
     end
 ```
 
