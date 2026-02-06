@@ -7,7 +7,9 @@ from app.utils.logger import logger
 from prometheus_client import Counter, Histogram
 import time
 
-# Prometheus Metrics
+from prometheus_client import Counter, Histogram
+import time
+
 SCRAPE_REQUESTS = Counter(
     "flux_scrape_requests_total",
     "Total number of scrape requests",
@@ -20,7 +22,12 @@ SCRAPE_DURATION = Histogram(
     ["provider"]
 )
 
-# User agents for rotation
+SCRAPE_DURATION = Histogram(
+    "flux_scrape_duration_seconds",
+    "Histogram of scrape duration",
+    ["provider"]
+)
+
 USER_AGENTS = [
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
     "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
@@ -37,7 +44,6 @@ class ScraperService:
             logger.warning("No scraping API keys found in environment variables")
 
     async def _fetch_tavily_extract(self, url: str) -> Optional[Dict]:
-        """Fetch extracted content from Tavily Extract API."""
         start_time = time.time()
         try:
             logger.info("Attempting Tavily Extract...")
@@ -56,7 +62,6 @@ class ScraperService:
                 if response.status_code == 200:
                     SCRAPE_REQUESTS.labels(provider="tavily_extract", status="success").inc()
                     data = response.json()
-                    # Tavily Extract returns {"results": [{"url": "...", "raw_content": "...", "content": "..."}]}
                     if data.get("results"):
                         return data["results"][0]
                 
@@ -68,7 +73,6 @@ class ScraperService:
         return None
 
     async def _fetch_tavily(self, query: str, limit: int = 10) -> Optional[Dict]:
-        """Fetch results from Tavily Search API."""
         start_time = time.time()
         try:
             logger.info(f"Attempting Tavily fetch with limit={limit}...")
@@ -99,11 +103,6 @@ class ScraperService:
         return None
 
     async def scrape_url(self, url: str) -> Optional[Union[str, Dict]]:
-        """
-        Scrape a single URL using available providers.
-        Priority: Tavily Extract -> ScrapingBee -> ZenRows -> Direct
-        """
-        # Priority 1: Tavily Extract
         if self.tavily_key:
             data = await self._fetch_tavily_extract(url)
             if data: return data
@@ -122,11 +121,9 @@ class ScraperService:
         return html
 
     async def fetch_results(self, query: str, region: str = "us", language: str = "en", limit: int = 10) -> Optional[Union[str, Dict]]:
-        # Formulate search URL
         params = {"q": query, "gl": region, "hl": language, "num": limit}
         search_url = f"https://www.google.com/search?{urllib.parse.urlencode(params)}"
         
-        # Priority 1: Tavily (Official API, most reliable)
         if self.tavily_key:
             data = await self._fetch_tavily(query, limit)
             if data: return data
@@ -134,7 +131,6 @@ class ScraperService:
         # Try providers in order
         html = None
         
-        # DEBUG: Save HTML to file for inspection
         debug_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "debug.html")
         
         if self.scrapingbee_key:
@@ -145,10 +141,8 @@ class ScraperService:
             html = await self._fetch_zenrows(search_url)
             if html and self._is_valid_html(html): return html
             
-        # Fallback to direct request
         res = await self._fetch_direct(search_url)
         
-        # Save debug file if we have content
         final_html = html if html else res
         if final_html:
             try:
@@ -239,11 +233,12 @@ class ScraperService:
         return None
 
     def _is_valid_html(self, html: str) -> bool:
-        """Check if the HTML looks like a valid search result page and not a CAPTCHA/interceptor."""
         if not html:
             return False
         
-        # Known failure signatures from Google/Providers
+        if not html:
+            return False
+        
         failure_markers = [
             "Please click here if you are not redirected",
             "having trouble accessing Google Search",

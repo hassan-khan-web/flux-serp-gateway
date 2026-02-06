@@ -8,7 +8,7 @@ from app.utils.logger import logger
 
 load_dotenv()
 
-# Determine base directory (where main.py resides)
+# Determine base directory
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 STATIC_DIR = os.path.join(BASE_DIR, "app/static")
 
@@ -18,11 +18,9 @@ app = FastAPI(
     version="1.0.0"
 )
 
-# Prometheus Instrumentation
 from prometheus_fastapi_instrumentator import Instrumentator
 Instrumentator().instrument(app).expose(app)
 
-# Ensure static directory exists
 if os.path.isdir(STATIC_DIR):
     app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 

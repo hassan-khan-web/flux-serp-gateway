@@ -8,12 +8,7 @@ router = APIRouter()
 
 @router.post("/search", response_model=TaskResponse, status_code=202)
 async def search_endpoint(request: SearchRequest):
-    """
-    Initiates a background search task.
-    Returns a task ID for polling.
-    """
     try:
-        # Dispatch Celery task
         task = scrape_and_process.delay(
             query=request.query,
             region=request.region,
@@ -34,9 +29,6 @@ async def search_endpoint(request: SearchRequest):
 
 @router.get("/tasks/{task_id}", response_model=TaskResponse)
 async def get_task_status(task_id: str):
-    """
-    Poll the status of a background task.
-    """
     try:
         task_result = AsyncResult(task_id)
         
@@ -53,8 +45,7 @@ async def get_task_status(task_id: str):
                     response.error = result_data["error"]
                 else:
                     response.status = "completed"
-                    # Validate against SearchResponse to ensure schema match
-                    response.result = SearchResponse(**result_data, cached=False) # Cached flag handling logic might need improvement in worker
+                    response.result = SearchResponse(**result_data, cached=False)
             else:
                 response.status = "failed"
                 response.error = str(task_result.result)
