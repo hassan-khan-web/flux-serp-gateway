@@ -1,6 +1,7 @@
 from bs4 import BeautifulSoup, Tag
-from typing import Dict, List, Optional, Union, Union
+from typing import Dict, List, Optional, Union
 import re
+import urllib.parse
 import trafilatura
 from app.utils.logger import logger
 
@@ -82,6 +83,7 @@ class ParserService:
             r"## Want to \?",
             r"## Click below to access",
             r"\*\*\[.*?\]\(.*?\)\*\*" 
+        ]
         
 
         
@@ -181,6 +183,7 @@ class ParserService:
                 "url": "", 
                 "snippet": cleaned_snippet[:15000],
                 "score": 0.5 
+            }]
         }
 
     def _extract_ai_overview(self, soup: BeautifulSoup) -> Optional[str]:
