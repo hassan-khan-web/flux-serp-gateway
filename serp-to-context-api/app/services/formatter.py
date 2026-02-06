@@ -54,7 +54,7 @@ class FormatterService:
 
         except Exception as e:
             logger.error(f"Deduplication failed: {e}")
-            return results # Fail safe: return original list
+            return results 
 
     def _generate_markdown(self, query: str, ai_overview: str, results: List[Dict]) -> str:
         md = [f"# Search Results for: {query}\n"]
@@ -63,7 +63,6 @@ class FormatterService:
             md.append(f"## AI Overview\n> {ai_overview}\n")
             md.append("---\n")
             
-        # Sorting results by Score (Credibility) Descending
         sorted_results = sorted(results, key=lambda x: x.get("score", 0.0), reverse=True)
             
         for idx, res in enumerate(sorted_results, 1):

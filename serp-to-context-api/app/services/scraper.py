@@ -128,7 +128,6 @@ class ScraperService:
             data = await self._fetch_tavily(query, limit)
             if data: return data
 
-        # Try providers in order
         html = None
         
         debug_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "debug.html")
