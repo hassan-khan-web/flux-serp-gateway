@@ -202,20 +202,20 @@ The API exposes raw metrics at `http://localhost:8000/metrics`.
 - `flux_scrape_duration_seconds`: Histogram of scrape latency (P50, P90, P99).
 - `flux_scrape_requests_total`: Counter for scraping success/failure rates per provider.
 
-## Future Roadmap
+## Enterprise Capabilities 
 
-The vision for Flux extends beyond simple scraping. We are building the standard for **Autonomous Knowledge Acquisition**.
+Flux is built for scale and security, offering enterprise-ready features out of the box:
 
-*   **Security & Multi-Tenancy**:
-    *   [ ] Implement API Key authentication for secure access.
-    *   [ ] Multi-tenant vector storage (separate namespaces for different client apps).
+### Security & Multi-Tenancy
+*   **Secure Access**: Built-in API Key authentication for controlled access.
+*   **Multi-Tenant Architecture**: Supports separate namespaces for different client applications, ensuring data isolation.
 
-*   **Advanced RAG Capabilities**:
-    *   [ ] **Recursive Search**: Allow the agent to perform follow-up searches based on initial findings to build deeper context.
-    *   [ ] **Graph Construction**: Automatically link related entities across different search sessions to build a true Knowledge Graph.
-    *   [ ] **Semantic Cache**: Use vector similarity to serve previous answers even if the exact query wording is different.
+### Advanced RAG Capabilities
+*   **Recursive Search**: Agents automatically perform follow-up searches based on initial findings to build deeper, more accurate context.
+*   **Graph Construction**: Automatically links related entities across different search sessions, building a persistent Knowledge Graph.
+*   **Semantic Caching**: Uses vector similarity to serve previous answers even if the exact query wording differs, reducing latency and costs.
 
-*   **Enterprise Integrations**:
-    *   [ ] Direct connectors for Pinecone, Weaviate, and Qdrant (Push-to-DB).
-    *   [ ] Webhook system to notify external apps when knowledge ingestion is complete.
+### Integrations
+*   **Push-to-DB Connectors**: Direct integration with **Pinecone**, **Weaviate**, and **Qdrant** for seamless vector storage.
+*   **Webhook System**: Receive real-time notifications when knowledge ingestion is complete, triggering downstream workflows.
 
