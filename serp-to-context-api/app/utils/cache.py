@@ -10,7 +10,7 @@ class CacheService:
         self.redis_url = os.getenv("REDIS_URL", "redis://localhost:6379/0")
         try:
             self.client = redis.from_url(self.redis_url, decode_responses=True)
-            self.ttl = 6 * 60 * 60  # 6 hours
+            self.ttl = 6 * 60 * 60
             logger.info(f"Connected to Redis at {self.redis_url}")
         except Exception as e:
             logger.error(f"Failed to connect to Redis: {e}")

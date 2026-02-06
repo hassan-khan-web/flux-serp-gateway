@@ -7,11 +7,10 @@ const __dirname = dirname(__filename)
 
 export default defineConfig({
     server: {
-        host: true, // Listen on all addresses, including LAN and public addresses
+        host: true,
         port: 5173,
-        strictPort: true, // Fail if port is already in use
+        strictPort: true,
         proxy: {
-            // Proxy API requests to the backend container
             '/search': {
                 target: 'http://api:8000',
                 changeOrigin: true,

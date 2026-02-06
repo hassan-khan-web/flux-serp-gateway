@@ -37,7 +37,6 @@ body {
     gap: 2rem;
 }
 
-/* Header */
 header {
     text-align: center;
     margin-bottom: 2rem;
@@ -57,7 +56,6 @@ h1 {
     font-size: 1.1rem;
 }
 
-/* Control Panel */
 .control-panel {
     background: var(--card-bg);
     border: 1px solid var(--border);
@@ -72,7 +70,6 @@ h1 {
     gap: 1.5rem;
 }
 
-/* Row 1: Query (Grow) + Limit (Fixed) */
 .row-1 {
     display: flex;
     gap: 1.5rem;
@@ -81,12 +78,10 @@ h1 {
 
 .query-field {
     flex: 1;
-    /* Takes remaining space */
 }
 
 .limit-field {
     width: 120px;
-    /* Fixed width */
 }
 
 .search-box {
@@ -98,7 +93,6 @@ h1 {
     width: 100%;
 }
 
-/* Row 2: Dropdowns (Left) + Button (Right Corner) */
 .row-2 {
     display: flex;
     justify-content: space-between;
@@ -126,7 +120,6 @@ label {
     letter-spacing: 0.02em;
 }
 
-/* Base Input/Select Styles - Cool & Trendy */
 input,
 select {
     background: #0d1117;
@@ -146,7 +139,6 @@ select:focus {
     box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.2);
 }
 
-/* Submit Button */
 button.run-btn {
     background: var(--success);
     color: white;
@@ -157,7 +149,6 @@ button.run-btn {
     cursor: pointer;
     transition: all 0.2s;
     height: 44px;
-    /* Align with inputs */
     display: flex;
     align-items: center;
     gap: 0.5rem;
@@ -180,15 +171,11 @@ button.run-btn:disabled {
     transform: none;
 }
 
-/* Results Area - Horizontal Scroll */
 .results-area {
     display: flex;
-    /* Horizontal Line */
     gap: 1.5rem;
     overflow-x: auto;
-    /* Side wise scroll */
     padding-bottom: 1rem;
-    /* Space for scrollbar */
     height: 650px;
 }
 
@@ -199,10 +186,7 @@ button.run-btn:disabled {
     display: flex;
     flex-direction: column;
     min-width: 450px;
-    /* Fixed sizing to force scroll if screen small */
     flex: 1;
-    /* Grow to fill if screen large */
-    /* Ensure they don't shrink too small */
     transition: all 0.3s ease;
 }
 
@@ -241,7 +225,6 @@ button.run-btn:disabled {
     flex: 1;
     padding: 1rem;
     overflow-y: auto;
-    /* Internal Vertical Scroll */
     font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
     font-size: 0.85rem;
     line-height: 1.5;
@@ -249,7 +232,6 @@ button.run-btn:disabled {
     white-space: pre-wrap;
 }
 
-/* Custom Scrollbars */
 ::-webkit-scrollbar {
     width: 8px;
     height: 8px;
@@ -268,7 +250,6 @@ button.run-btn:disabled {
     background: #6e7681;
 }
 
-/* Spinner */
 .spinner {
     width: 16px;
     height: 16px;
@@ -285,7 +266,6 @@ button.run-btn:disabled {
     }
 }
 
-/* Syntax Highlighting Mockup for Markdown/JSON */
 .key {
     color: #9cdcfe;
 }
@@ -302,7 +282,6 @@ button.run-btn:disabled {
     color: #569cd6;
 }
 
-/* Table Styles for Markdown Output */
 table {
     border-collapse: collapse;
     width: 100%;
@@ -332,7 +311,6 @@ tr:hover {
     background-color: rgba(255, 255, 255, 0.04);
 }
 
-/* Custom Dropdown Styles */
 .custom-dropdown {
     position: relative;
     width: 200px;
@@ -352,7 +330,6 @@ tr:hover {
     cursor: pointer;
     text-align: left;
     height: 44px;
-    /* Match standard inputs */
     transition: all 0.2s ease;
 }
 

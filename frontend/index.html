@@ -5,9 +5,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Agent-First SERP Gateway</title>
-    <!-- Vite handles CSS import via main.ts mostly, but if style.css is separate: -->
-    <!--  <link rel="stylesheet" href="/src/style.css"> -->
-    <!-- But relying on main.ts import is better in Vite -->
 </head>
 
 <body>
@@ -18,10 +15,8 @@
     </header>
 
     <div class="container">
-        <!-- Control Panel -->
         <div class="control-panel">
             <form id="searchForm" class="input-container">
-                <!-- Row 1: Query + Limit -->
                 <div class="row-1">
                     <div class="field query-field">
                         <label>Query or URL</label>
@@ -36,7 +31,6 @@
                     </div>
                 </div>
 
-                <!-- Row 2: Dropdowns + Button -->
                 <div class="row-2">
                     <div class="dropdown-group">
                         <div class="field">
@@ -96,9 +90,7 @@
             </form>
         </div>
 
-        <!-- Results Area -->
         <div class="results-area">
-            <!-- Left: Markdown (LLM Context) -->
             <div class="panel">
                 <div class="panel-header">
                     <span>LLM-Ready Context (Markdown)</span>
@@ -115,7 +107,6 @@
                 <div class="panel-content" id="jsonOutput">// Waiting for input...</div>
             </div>
 
-            <!-- Right: Vector Embeddings -->
             <div class="panel">
                 <div class="panel-header">
                     <span>Vector Embeddings (RAG)</span>

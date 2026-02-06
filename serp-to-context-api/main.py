@@ -8,7 +8,6 @@ from app.utils.logger import logger
 
 load_dotenv()
 
-# Determine base directory
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 STATIC_DIR = os.path.join(BASE_DIR, "app/static")
 

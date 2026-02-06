@@ -10,7 +10,6 @@ const mdOutput = document.getElementById('markdownOutput') as HTMLElement;
 const jsonOutput = document.getElementById('jsonOutput') as HTMLElement;
 const vectorOutput = document.getElementById('vectorOutput') as HTMLElement;
 
-// Get Panels (Assuming structure: .panel > .panel-content#id)
 const mdPanel = mdOutput.closest('.panel') as HTMLElement;
 const jsonPanel = jsonOutput.closest('.panel') as HTMLElement;
 const vectorPanel = vectorOutput.closest('.panel') as HTMLElement;
@@ -20,7 +19,6 @@ const vectorStat = document.getElementById('vectorStat') as HTMLElement;
 const statusBadge = document.getElementById('statusBadge') as HTMLElement;
 const queryInput = document.getElementById('queryInput') as HTMLInputElement;
 
-// Custom Dropdown Elements
 const formatDropdownBtn = document.getElementById('formatDropdownBtn') as HTMLElement;
 const formatDropdownMenu = document.getElementById('formatDropdownMenu') as HTMLElement;
 const formatLabel = document.getElementById('selectedFormatLabel') as HTMLElement;
@@ -28,7 +26,6 @@ const formatOptions = document.getElementsByName('format_option') as NodeListOf<
 
 let currentFormat = 'all';
 
-// Dropdown Logic
 if (formatDropdownBtn && formatDropdownMenu) {
     formatDropdownBtn.addEventListener('click', (e) => {
         e.stopPropagation();
@@ -50,7 +47,6 @@ if (formatOptions) {
         opt.addEventListener('change', () => {
             if (opt.checked) {
                 currentFormat = opt.value;
-                // Update Label
                 const labelText = opt.nextElementSibling?.textContent || 'Display All';
                 if (formatLabel) formatLabel.textContent = labelText;
 
@@ -63,7 +59,6 @@ if (formatOptions) {
 }
 
 function updatePanelVisibility(format: string) {
-    // Safety check if panels exist
     if (!mdPanel || !jsonPanel || !vectorPanel) return;
 
     if (format === 'all') {
@@ -73,12 +68,10 @@ function updatePanelVisibility(format: string) {
         return;
     }
 
-    // Hide all
     mdPanel.classList.add('hidden');
     jsonPanel.classList.add('hidden');
     vectorPanel.classList.add('hidden');
 
-    // Show specific
     if (format === 'markdown') mdPanel.classList.remove('hidden');
     if (format === 'json') jsonPanel.classList.remove('hidden');
     if (format === 'vector') vectorPanel.classList.remove('hidden');
@@ -106,8 +99,6 @@ async function performSearch(): Promise<void> {
     spinner.style.display = 'block';
     btnText.textContent = 'Processing...';
 
-    // Map currentFormat to API format
-    // Sending 'vector' ensures we get rich data (organic_results with embeddings) + formatted_output.
     const apiFormat = currentFormat === 'all' ? 'vector' : currentFormat;
 
     if (!query) {
@@ -130,10 +121,9 @@ async function performSearch(): Promise<void> {
         }, 500);
     };
 
-    // Apply loading state to visible panels
     const activeStatElements: HTMLElement[] = [];
     if (!mdPanel.classList.contains('hidden')) activeStatElements.push(mdOutput);
-    if (!jsonPanel.classList.contains('hidden')) jsonOutput.textContent = 'Fetching data...'; // Placeholder until loop starts
+    if (!jsonPanel.classList.contains('hidden')) jsonOutput.textContent = 'Fetching data...';
     if (!jsonPanel.classList.contains('hidden')) activeStatElements.push(jsonOutput);
     if (!vectorPanel.classList.contains('hidden')) activeStatElements.push(vectorOutput);
 
@@ -181,33 +171,28 @@ async function performSearch(): Promise<void> {
 
             if (pollData.status === 'completed') {
                 data = pollData.result;
-                // Add checks to ensure data isn't null if result is missing (unlikely if status is completed)
                 if (!data) throw new Error("Task completed but no data returned.");
                 break;
             } else if (pollData.status === 'failed') {
                 throw new Error(pollData.error || "Task failed on server");
             }
-            // else string is 'pending' or 'processing', continue loop
         }
 
         // Update UI
         const mdContent = data.formatted_output || "No output generated.";
         try {
-            // Render Markdown for proper tables
             mdOutput.innerHTML = parse(mdContent) as string;
         } catch (e) {
             console.error("Markdown parse error:", e);
             mdOutput.textContent = mdContent;
         }
 
-        // Prepare JSON output (exclude heavy vectors)
         const jsonData = JSON.parse(JSON.stringify(data));
         if (jsonData.organic_results) {
             jsonData.organic_results.forEach((r: any) => delete r.embedding);
         }
         jsonOutput.textContent = JSON.stringify(jsonData, null, 2);
 
-        // Vector Output Logic
         if (data.organic_results && data.organic_results.length > 0) {
             const vectors = data.organic_results.filter((r: any) => r.embedding);
             if (vectors.length > 0) {

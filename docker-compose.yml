@@ -27,7 +27,6 @@ services:
       - redis
     volumes:
       - ./serp-to-context-api:/app/serp-to-context-api
-    # Reload command for development
     command: uvicorn serp-to-context-api.main:app --host 0.0.0.0 --port 8000 --reload
     networks:
       - app-network
