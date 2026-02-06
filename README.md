@@ -13,25 +13,38 @@ A resilient, token-optimized Search-to-LLM context API. This project is designed
 
 ```text
 Flux/
-├── .env.example              # Template for environment variables (API keys, Redis URL)
-├── docker-compose.yml        # Orchestrates Backend, Worker, Frontend, Redis, DB
-├── Dockerfile                # Backend Image
-├── requirements.txt          # Python dependencies (Celery, Redis, FastAPI, etc.)
+├── .env.example              # Template for environment variables
+├── docker-compose.yml        # Orchestrates services (Backend, Frontend, etc.)
+├── Dockerfile                # Backend Docker Image
+├── prometheus.yml            # Prometheus Monitoring Config
+├── requirements.txt          # Python dependencies
 │
 ├── frontend/                 # Client-side application
-│   ├── Dockerfile            # Frontend Image (Node.js)
-│   ├── package.json
-│   ├── vite.config.ts        # Proxy configured for Docker
+│   ├── Dockerfile            # Frontend Docker Image
+│   ├── index.html            # Entry HTML
+│   ├── package.json          # Node dependencies
+│   ├── tsconfig.json         # TypeScript config
+│   ├── vite.config.ts        # Vite Build config
 │   └── src/
-│       ├── main.ts           # Frontend logic (Polling support)
-│       └── ...
+│       ├── main.ts           # Core Application Logic
+│       ├── marked.js         # Markdown rendering lib
+│       └── style.css         # Global Styles
 │
 └── serp-to-context-api/      # Core Backend API
-    ├── main.py               # Application entry point
+    ├── main.py               # FastAPI Entry Point
     └── app/
-        ├── worker.py         # Celery Worker Configuration
-        ├── api/routes.py     # Async Task Endpoints
-        └── ...
+        ├── worker.py         # Celery Worker Entry Point
+        ├── api/
+        │   ├── routes.py     # API Endpoints
+        │   └── schemas.py    # Pydantic Models
+        ├── services/
+        │   ├── embeddings.py # Vector Generation (SentenceTransformers)
+        │   ├── formatter.py  # Markdown Formatting
+        │   ├── parser.py     # HTML Parsing & Cleaning
+        │   └── scraper.py    # Hybrid Scraper (Tavily/ScrapingBee)
+        └── utils/
+            ├── cache.py      # Redis Caching Wrapper
+            └── logger.py     # Structured Logging
 ```
 ## Process Pipeline
 
@@ -56,6 +69,12 @@ graph TD
         L["Poll Status /tasks/{id}"] --> N{"Check Redis"}
         N -- Ready --> M["Display Result"]
         N -- Pending --> L
+    end
+
+    subgraph "Observability"
+        P["Prometheus"] -.->|Scrape /metrics| D
+        P -.->|Scrape /metrics| G
+        O["Grafana"] --> P
     end
 ```
 
