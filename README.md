@@ -49,9 +49,10 @@ Flux/
 ## Process Pipeline
 
 
+
 ```mermaid
 graph TD
-    A["User Request"] --> B{"Check Redis Cache"}
+    A["User Request"] <--> B{"Check Redis Cache"}
     B -- Hit --> C["Return Cached Data"]
     B -- Miss --> D["Dispatch Async Task (Push to Redis)"]
     D -.->|Task ID| E["Return HTTP 202 Accepted"]
@@ -67,15 +68,15 @@ graph TD
     end
 
     subgraph "Frontend Polling"
-        L["Poll Status /tasks/{id}"] --> N{"Check Redis"}
+        L["Poll Status /tasks/{id}"] <--> N{"Check Redis"}
         N -- Ready --> M["Display Result"]
         N -- Pending --> L
     end
 
     subgraph "Observability"
-        P["Prometheus"] -.->|Scrape /metrics| D
-        P -.->|Scrape /metrics| G
-        O["Grafana"] --> P
+        P["Prometheus"] <-.->|Scrape /metrics| D
+        P <-.->|Scrape /metrics| G
+        O["Grafana"] <--> P
     end
 ```
 
