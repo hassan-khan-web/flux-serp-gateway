@@ -49,7 +49,7 @@ Flux/
 ## Process Pipeline
 
 
-```text
+```mermaid
 graph TD
     A["User Request"] --> B{"Check Redis Cache"}
     B -- Hit --> C["Return Cached Data"]
