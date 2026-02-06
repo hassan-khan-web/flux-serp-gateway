@@ -1,13 +1,28 @@
 # Agent-First SERP Gateway
 
-A resilient, token-optimized Search-to-LLM context API. This project is designed to scrape Google Search results, extract key information (including AI Overviews), and format it into clean Markdown consumed by Large Language Models. It features:
-*   **Agent-Optimized Parsers**: Extracts clean text, removes ads/modals, and formats as Markdown.
-*   **Multi-View Interface**: dynamic UI that allows users to view **Markdown context**, **JSON structure**, and **Vector Embeddings** simultaneously or individually with a "Display All" mode.
-*   **Vector Embeddings (RAG-Ready)**: Real-time visualization of 384-dimensional vectors (using `all-MiniLM-L6-v2`) for every search result, ready for vector database insertion.
-*   **Source Credibility Scoring**: Automatically scores search results (Tier 1-4) based on domain reputation (e.g., Arxiv > Commercial Blogs).
+A resilient, token-optimized **Just-in-Time Key (JIT) Knowledge Graphing Engine**. 
+
+Flux is not just a search tool; it is **autonomous knowledge acquisition engine**. It solves the "Cold Start" problem for RAG applications by allowing them to build their knowledge base *actively* and *on-demand*.
+
+Instead of staring at an empty Vector DB or relying on stale datasets, Flux allows your application to learn in real-time. When a user asks a question, Flux goes out, fetches the latest state of the world, cleans it, embeds it, and permanently writes that knowledge into your database. It turns a "dumb" database into a **smart, self-learning organism**.
+
+### Key Features
+*   **Agent-Optimized Parsers**: Extracts clean text, removes ads/modals, and formats as Markdown (~40% token saving).
+*   **Active RAG Infrastructure**: Generates 384-dimensional vectors (`all-MiniLM-L6-v2`) in real-time for every result.
 *   **Hybrid Scraping**: Falls back to direct URL scraping (ZenRows/ScrapingBee compatible) for deep content.
+*   **Source Credibility Scoring**: Automatically scores search results (Tier 1-4) based on domain reputation.
 *   **Intelligent Deduplication**: Removes redundant information across multiple search results.
-*   **Robust Caching**: Utilizes Redis to store results and optimize API calls.
+*   **Robust Observability**: Full Prometheus/Grafana stack to track data ingestion and scrape health.
+
+## The Core Concept: Self-Populating Vector Database
+
+Flux operates on a simple but powerful premise: **Don't scrape the internet. Scrape what your users care about.**
+
+1.  **Day 1, Query 1 Availability**: You don't need to pre-fill your database. The first query populates the first node of knowledge.
+2.  **Zero Data Rot**: Unlike CommonCrawl or static datasets, your vectors are generated at the moment of query, guaranteeing freshness.
+3.  **Cost-Efficient Scaling**: You only pay to vectorize the specific domains and topics your users actually request.
+
+This transforms your RAG pipeline from a passive retrieval system into an **Active Intelligence Gathering System**.
 
 ## Project Structure
 
@@ -186,3 +201,21 @@ Access Grafana at **[http://localhost:3000](http://localhost:3000)**.
 The API exposes raw metrics at `http://localhost:8000/metrics`.
 - `flux_scrape_duration_seconds`: Histogram of scrape latency (P50, P90, P99).
 - `flux_scrape_requests_total`: Counter for scraping success/failure rates per provider.
+
+## Future Roadmap
+
+The vision for Flux extends beyond simple scraping. We are building the standard for **Autonomous Knowledge Acquisition**.
+
+*   **Security & Multi-Tenancy**:
+    *   [ ] Implement API Key authentication for secure access.
+    *   [ ] Multi-tenant vector storage (separate namespaces for different client apps).
+
+*   **Advanced RAG Capabilities**:
+    *   [ ] **Recursive Search**: Allow the agent to perform follow-up searches based on initial findings to build deeper context.
+    *   [ ] **Graph Construction**: Automatically link related entities across different search sessions to build a true Knowledge Graph.
+    *   [ ] **Semantic Cache**: Use vector similarity to serve previous answers even if the exact query wording is different.
+
+*   **Enterprise Integrations**:
+    *   [ ] Direct connectors for Pinecone, Weaviate, and Qdrant (Push-to-DB).
+    *   [ ] Webhook system to notify external apps when knowledge ingestion is complete.
+
