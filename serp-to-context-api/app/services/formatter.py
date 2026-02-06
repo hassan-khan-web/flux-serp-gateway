@@ -8,13 +8,10 @@ class FormatterService:
         organic = parsed_data.get("organic_results", [])
         ai_overview = parsed_data.get("ai_overview")
         
-        # Deduplicate
         unique_results = self._deduplicate_results(organic)
         
-        # Format as Markdown
         markdown_output = self._generate_markdown(query, ai_overview, unique_results)
         
-        # Calculate tokens
         token_count = self._estimate_tokens(markdown_output)
 
         return {
@@ -26,9 +23,6 @@ class FormatterService:
         }
 
     def _deduplicate_results(self, results: List[Dict], threshold: float = 0.85) -> List[Dict]:
-        """
-        Removes results that are too similar in content using TF-IDF cosine similarity.
-        """
         if not results:
             return []
         
@@ -37,7 +31,6 @@ class FormatterService:
 
         try:
             snippets = [r.get("snippet", "") for r in results]
-            # Handle empty snippets to avoid vectorizer errors
             if all(not s.strip() for s in snippets):
                 return results
 
@@ -84,8 +77,6 @@ class FormatterService:
         return "\n".join(md)
 
     def _estimate_tokens(self, text: str) -> int:
-        # Approximate: 1 token ~= 4 chars or 0.75 words
-        # Use word count * 1.3 as requested in prompt
         word_count = len(text.split())
         return int(word_count * 1.3)
 

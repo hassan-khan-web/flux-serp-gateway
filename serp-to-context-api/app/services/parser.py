@@ -6,19 +6,13 @@ from app.utils.logger import logger
 
 class ParserService:
     def parse(self, content: Union[str, Dict]) -> Dict:
-        """
-        Parses content to extract AI Overview and organic results.
-        Handles both raw HTML (ScrapingBee/ZenRows) and structured JSON (Tavily).
-        """
-        # Case 1: Structured Data (Tavily)
         if isinstance(content, dict):
-            # Map Tavily format
             organic_results = [
                 {
                     "title": result.get("title"),
                     "url": result.get("url"),
-                    "snippet": self._clean_text(result.get("content")), # Clean noise
-                    "score": self._calculate_credibility(result.get("url")) # Calculate score
+                    "snippet": self._clean_text(result.get("content")),
+                    "score": self._calculate_credibility(result.get("url"))
                 }
                 for result in content.get("results", [])
             ]
@@ -28,10 +22,8 @@ class ParserService:
                 "organic_results": organic_results
             }
 
-        # Case 2: Raw HTML (ScrapingBee/ZenRows/Direct)
         soup = BeautifulSoup(content, 'html.parser')
         
-        # Remove known junk to clean up the DOM
         for tag in soup(['script', 'style', 'nav', 'footer', 'header', 'noscript']):
             tag.decompose()
 
@@ -41,20 +33,12 @@ class ParserService:
         }
 
     def _clean_text(self, text: Optional[str]) -> Optional[str]:
-        """
-        Removes common scraping noise like login prompts, cookie notices, and navigation text.
-        """
-        if not text:
-            return None
-            
         noise_patterns = [
-            # LinkedIn / Social Walls
             r"Create your free account or sign in",
             r"New to LinkedIn\? Join now",
             r"Sign in to view more content",
             r"agree to LinkedIn’s User Agreement",
             
-            # Common Cookie/Nav junk
             r"See our Cookie Policy",
             r"Manage your preferences",
             r"Skip to main content",

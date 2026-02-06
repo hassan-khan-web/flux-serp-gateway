@@ -24,9 +24,7 @@ class EmbeddingsService:
             return []
         
         try:
-            # Generate embeddings
             embeddings = self.model.encode(texts)
-            # Convert numpy arrays to lists
             return embeddings.tolist()
         except Exception as e:
             logger.error(f"Error generating embeddings: {e}")
