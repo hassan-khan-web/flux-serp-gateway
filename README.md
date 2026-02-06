@@ -113,11 +113,6 @@ cd serp-to-context-api
 uvicorn main:app --reload
 ```
 
-**App will be available at:**
-
-- **API**: http://localhost:8000
-- **Docs**: http://localhost:8000/docs
-- **Health**: http://localhost:8000/health
 
 ### 2. Frontend (Development)
 
@@ -129,8 +124,6 @@ npm install
 npm run dev
 ```
 
-**Frontend**: http://localhost:5173 (typical Vite default)
-
 ---
 
 ## Docker Support
@@ -141,13 +134,18 @@ For a production-like environment with all services wired together:
 docker compose up --build
 ```
 
-**Docker Services:**
+## Service Access Points
 
-- **Frontend**: http://localhost:5173
-- **API**: http://localhost:8000
-- **Redis**: localhost:6380
-- **Grafana**: http://localhost:3000 (User/Pass: `admin`/`admin`)
-- **Prometheus**: http://localhost:9090
+All services are accessible at the following endpoints:
+
+| Service | URL | Description |
+| :--- | :--- | :--- |
+| **Frontend** | [http://localhost:5173](http://localhost:5173) | Main User Interface |
+| **API API** | [http://localhost:8000](http://localhost:8000) | Backend REST API |
+| **API Docs** | [http://localhost:8000/docs](http://localhost:8000/docs) | Swagger Documentation |
+| **Grafana** | [http://localhost:3000](http://localhost:3000) | Monitoring Dashboard (`admin`/`admin`) |
+| **Prometheus**| [http://localhost:9090](http://localhost:9090) | Metric Collection |
+| **Redis** | `localhost:6380` | Cache (TCP) |
 
 ## Observability & Monitoring
 
