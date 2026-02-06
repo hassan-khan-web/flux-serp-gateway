@@ -48,36 +48,6 @@ Flux/
 ```
 ## Process Pipeline
 
-```mermaid
-graph TD
-    A["User Request"] --> B{"Check Redis Cache"}
-    B -- Hit --> C["Return Cached Data"]
-    B -- Miss --> D["Dispatch Async Task (Push to Redis)"]
-    D -.->|Task ID| E["Return HTTP 202 Accepted"]
-    D -.->|Queue| F
-    E -.->|Trigger| L
-
-    subgraph "Celery Worker"
-        F["Queue: Scrape Task"] --> G["Hybrid Scraper"]
-        G --> H["Parser & Cleaner"]
-        H --> I["Formatter (Markdown)"]
-        I --> J["Embedding Service"]
-        J --> K["Save Result to Redis"]
-    end
-
-    subgraph "Frontend Polling"
-        L["Poll Status /tasks/{id}"] --> N{"Check Redis"}
-        N -- Ready --> M["Display Result"]
-        N -- Pending --> L
-    end
-
-    subgraph "Observability"
-        P["Prometheus"] -.->|Scrape /metrics| D
-        P -.->|Scrape /metrics| G
-        O["Grafana"] --> P
-    end
-```
-
 1.  **Request**: User sends query + config (Region, Language, Limit).
 2.  **Cache Layer**: Checks Redis for existing identical requests.
 3.  **Scraping**: If fresh, uses the optimal provider (SerpApi/Tavily/etc.) to fetch results.
@@ -86,6 +56,7 @@ graph TD
     *   **Formatting**: Converts HTML/Text to clean Markdown.
     *   **Embedding**: Generates 384-d vectors for each result snippet.
 5.  **Response**: Returns the structured data (JSON), human-readable context (Markdown), and vector arrays.
+6.  **Observability (Background)**: Prometheus scrapes metrics from the API and Worker; Grafana visualizes them.
 
 ## Setup & Configuration
 
