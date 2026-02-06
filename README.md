@@ -146,3 +146,23 @@ docker compose up --build
 - **Frontend**: http://localhost:5173
 - **API**: http://localhost:8000
 - **Redis**: localhost:6380
+- **Grafana**: http://localhost:3000 (User/Pass: `admin`/`admin`)
+- **Prometheus**: http://localhost:9090
+
+## Observability & Monitoring
+
+The system comes with a built-in monitoring stack to track scraping performance, latency, and costs.
+
+### 1. Grafana Dashboards (Visual)
+Access Grafana at **[http://localhost:3000](http://localhost:3000)**.
+- **Login**: `admin` / `admin`
+- **Setup**:
+    1. Go to **Connections > Data Sources**.
+    2. Add **Prometheus**.
+    3. URL: `http://prometheus:9090`.
+    4. Save & Test.
+
+### 2. Prometheus Metrics (Data)
+The API exposes raw metrics at `http://localhost:8000/metrics`.
+- `flux_scrape_duration_seconds`: Histogram of scrape latency (P50, P90, P99).
+- `flux_scrape_requests_total`: Counter for scraping success/failure rates per provider.
