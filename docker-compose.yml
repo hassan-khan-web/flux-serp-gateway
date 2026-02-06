@@ -11,6 +11,8 @@ services:
       - /app/node_modules
     depends_on:
       - api
+    networks:
+      - app-network
 
   api:
     build: .
@@ -27,6 +29,8 @@ services:
       - ./serp-to-context-api:/app/serp-to-context-api
     # Reload command for development
     command: uvicorn serp-to-context-api.main:app --host 0.0.0.0 --port 8000 --reload
+    networks:
+      - app-network
 
   worker:
     build: .
@@ -40,11 +44,36 @@ services:
       - redis
     volumes:
       - ./serp-to-context-api:/app/serp-to-context-api
+    networks:
+      - app-network
 
   redis:
     image: redis:alpine
     ports:
       - "6380:6379"
+    networks:
+      - app-network
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: flux-prometheus
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    ports:
+      - "9090:9090"
+    networks:
+      - app-network
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: flux-grafana
+    volumes:
+      - grafana_data:/var/lib/grafana
+    ports:
+      - "3000:3000"
+    networks:
+      - app-network
 
   db:
     image: pgvector/pgvector:pg16
@@ -58,6 +87,15 @@ services:
       - POSTGRES_DB=${POSTGRES_DB:-flux_db}
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    networks:
+      - app-network
 
 volumes:
   postgres_data:
+  prometheus_data:
+  grafana_data:
+
+
+networks:
+  app-network:
+    driver: bridge

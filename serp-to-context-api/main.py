@@ -18,6 +18,10 @@ app = FastAPI(
     version="1.0.0"
 )
 
+# Prometheus Instrumentation
+from prometheus_fastapi_instrumentator import Instrumentator
+Instrumentator().instrument(app).expose(app)
+
 # Ensure static directory exists
 if os.path.isdir(STATIC_DIR):
     app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")

@@ -4,6 +4,21 @@ import random
 import urllib.parse
 from typing import Optional, Union, Dict
 from app.utils.logger import logger
+from prometheus_client import Counter, Histogram
+import time
+
+# Prometheus Metrics
+SCRAPE_REQUESTS = Counter(
+    "flux_scrape_requests_total",
+    "Total number of scrape requests",
+    ["provider", "status"]
+)
+
+SCRAPE_DURATION = Histogram(
+    "flux_scrape_duration_seconds",
+    "Histogram of scrape duration",
+    ["provider"]
+)
 
 # User agents for rotation
 USER_AGENTS = [
@@ -23,6 +38,7 @@ class ScraperService:
 
     async def _fetch_tavily_extract(self, url: str) -> Optional[Dict]:
         """Fetch extracted content from Tavily Extract API."""
+        start_time = time.time()
         try:
             logger.info("Attempting Tavily Extract...")
             async with httpx.AsyncClient(timeout=30.0) as client:
@@ -34,18 +50,26 @@ class ScraperService:
                         "include_images": False
                     }
                 )
+                duration = time.time() - start_time
+                SCRAPE_DURATION.labels(provider="tavily_extract").observe(duration)
+
                 if response.status_code == 200:
+                    SCRAPE_REQUESTS.labels(provider="tavily_extract", status="success").inc()
                     data = response.json()
                     # Tavily Extract returns {"results": [{"url": "...", "raw_content": "...", "content": "..."}]}
                     if data.get("results"):
                         return data["results"][0]
+                
+                SCRAPE_REQUESTS.labels(provider="tavily_extract", status="error").inc()
                 logger.warning(f"Tavily Extract failed with status {response.status_code}: {response.text}")
         except Exception as e:
+            SCRAPE_REQUESTS.labels(provider="tavily_extract", status="exception").inc()
             logger.error(f"Tavily Extract error: {e}")
         return None
 
     async def _fetch_tavily(self, query: str, limit: int = 10) -> Optional[Dict]:
         """Fetch results from Tavily Search API."""
+        start_time = time.time()
         try:
             logger.info(f"Attempting Tavily fetch with limit={limit}...")
             async with httpx.AsyncClient(timeout=30.0) as client:
@@ -60,10 +84,17 @@ class ScraperService:
                         "max_results": limit
                     }
                 )
+                duration = time.time() - start_time
+                SCRAPE_DURATION.labels(provider="tavily_search").observe(duration)
+
                 if response.status_code == 200:
+                    SCRAPE_REQUESTS.labels(provider="tavily_search", status="success").inc()
                     return response.json()
+                
+                SCRAPE_REQUESTS.labels(provider="tavily_search", status="error").inc()
                 logger.warning(f"Tavily failed with status {response.status_code}: {response.text}")
         except Exception as e:
+            SCRAPE_REQUESTS.labels(provider="tavily_search", status="exception").inc()
             logger.error(f"Tavily error: {e}")
         return None
 
@@ -130,6 +161,7 @@ class ScraperService:
         return final_html
 
     async def _fetch_scrapingbee(self, url: str) -> Optional[str]:
+        start_time = time.time()
         try:
             logger.info("Attempting ScrapingBee fetch...")
             async with httpx.AsyncClient(timeout=60.0) as client:
@@ -146,14 +178,22 @@ class ScraperService:
                         "device": "desktop"
                     }
                 )
+                duration = time.time() - start_time
+                SCRAPE_DURATION.labels(provider="scrapingbee").observe(duration)
+
                 if response.status_code == 200:
+                    SCRAPE_REQUESTS.labels(provider="scrapingbee", status="success").inc()
                     return response.text
+                
+                SCRAPE_REQUESTS.labels(provider="scrapingbee", status="error").inc()
                 logger.warning(f"ScrapingBee failed with status {response.status_code}")
         except Exception as e:
+            SCRAPE_REQUESTS.labels(provider="scrapingbee", status="exception").inc()
             logger.error(f"ScrapingBee error: {e}")
         return None
 
     async def _fetch_zenrows(self, url: str) -> Optional[str]:
+        start_time = time.time()
         try:
             logger.info("Attempting ZenRows fetch...")
             async with httpx.AsyncClient(timeout=60.0) as client:
@@ -161,17 +201,24 @@ class ScraperService:
                     "https://api.zenrows.com/v1/",
                     params={
                         "apikey": self.zenrows_key,
-                        "url": url,
+                        "url": url, 
                         "js_render": "true",
                         "premium_proxy": "true",
                         "antibot": "true",
                         "location": "United States"
                     }
                 )
+                duration = time.time() - start_time
+                SCRAPE_DURATION.labels(provider="zenrows").observe(duration)
+
                 if response.status_code == 200:
+                    SCRAPE_REQUESTS.labels(provider="zenrows", status="success").inc()
                     return response.text
+                
+                SCRAPE_REQUESTS.labels(provider="zenrows", status="error").inc()
                 logger.warning(f"ZenRows failed with status {response.status_code}")
         except Exception as e:
+            SCRAPE_REQUESTS.labels(provider="zenrows", status="exception").inc()
             logger.error(f"ZenRows error: {e}")
         return None
 
