@@ -6,6 +6,10 @@ from app.services.parser import parser
 from app.services.formatter import formatter
 from app.services.embeddings import embeddings_service
 from app.utils.cache import cache
+from app.db.database import AsyncSessionLocal, init_db
+from app.db.repository import save_search_results
+from app.utils.logger import logger
+
 
 REDIS_URL = os.getenv("REDIS_URL", "redis://localhost:6379/0")
 
@@ -70,6 +74,19 @@ def scrape_and_process(self, query: str, region: str, language: str, limit: int,
                 for i, res in enumerate(result["organic_results"]):
                     if i < len(vectors):
                          res["embedding"] = vectors[i]
+
+        # Save to Database
+        try:
+            # Initialize DB tables (ensure they exist)
+            loop.run_until_complete(init_db())
+            
+            async def _save():
+                async with AsyncSessionLocal() as session:
+                    await save_search_results(session, query, result["organic_results"])
+            
+            loop.run_until_complete(_save())
+        except Exception as e:
+            logger.error(f"Database save error: {e}")
 
         if result["organic_results"]:
             cache.set(query, result, region, language, limit)

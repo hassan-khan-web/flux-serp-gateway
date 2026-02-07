@@ -7,8 +7,7 @@ from app.utils.logger import logger
 from prometheus_client import Counter, Histogram
 import time
 
-from prometheus_client import Counter, Histogram
-import time
+
 
 SCRAPE_REQUESTS = Counter(
     "flux_scrape_requests_total",
@@ -22,11 +21,7 @@ SCRAPE_DURATION = Histogram(
     ["provider"]
 )
 
-SCRAPE_DURATION = Histogram(
-    "flux_scrape_duration_seconds",
-    "Histogram of scrape duration",
-    ["provider"]
-)
+
 
 USER_AGENTS = [
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
