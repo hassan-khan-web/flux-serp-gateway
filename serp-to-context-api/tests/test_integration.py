@@ -190,11 +190,8 @@ def test_integration_sync_wrapper(db_url):
         mock_fetch.return_value = future
 
         # 3. Call worker
-        # We need to simulate the 'self' argument if bind=True
-        # scrape_and_process(self, ...)
-        
-        # We can mock 'self'
-        mock_self = MagicMock()
+        # For Celery tasks with bind=True, we call directly without mocking 'self'
+        # Celery will handle passing the task instance automatically
         
         # Call the worker!
         # This will create a loop and run_until_complete inside.
