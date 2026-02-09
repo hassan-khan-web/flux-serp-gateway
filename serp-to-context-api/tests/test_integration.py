@@ -202,7 +202,6 @@ def test_integration_sync_wrapper(db_url):
         # This is safe.
         
         result = scrape_and_process(
-            mock_self,
             query="test query",
             region="us",
             language="en",
