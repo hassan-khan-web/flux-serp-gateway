@@ -1,0 +1,93 @@
+{
+    "_type": "export",
+    "__export_format": 4,
+    "__export_date": "2024-02-09T09:00:00.000Z",
+    "__export_source": "insomnia.desktop.app:v2023.5.8",
+    "resources": [
+        {
+            "_id": "req_flux_search",
+            "parentId": "wrk_flux_api",
+            "modified": 1707469200000,
+            "created": 1707469200000,
+            "url": "{{ _.base_url }}/search",
+            "name": "Search",
+            "description": "Submit a search query to the SERP to Context API",
+            "method": "POST",
+            "body": {
+                "mimeType": "application/json",
+                "text": "{\n\t\"query\": \"large language models\",\n\t\"region\": \"us\",\n\t\"language\": \"en\",\n\t\"limit\": 5,\n\t\"mode\": \"search\",\n\t\"output_format\": \"markdown\"\n}"
+            },
+            "parameters": [],
+            "headers": [
+                {
+                    "name": "Content-Type",
+                    "value": "application/json"
+                }
+            ],
+            "authentication": {},
+            "metaSortKey": -1707469200000,
+            "isPrivate": false,
+            "settingStoreCookies": true,
+            "settingSendCookies": true,
+            "settingDisableRenderRequestBody": false,
+            "settingEncodeUrl": true,
+            "settingRebuildPath": true,
+            "settingFollowRedirects": "global",
+            "_type": "request"
+        },
+        {
+            "_id": "req_flux_task_status",
+            "parentId": "wrk_flux_api",
+            "modified": 1707469200000,
+            "created": 1707469200000,
+            "url": "{{ _.base_url }}/tasks/{{ _.task_id }}",
+            "name": "Get Task Status",
+            "description": "Check the status of a search task",
+            "method": "GET",
+            "body": {},
+            "parameters": [],
+            "headers": [],
+            "authentication": {},
+            "metaSortKey": -1707469100000,
+            "isPrivate": false,
+            "settingStoreCookies": true,
+            "settingSendCookies": true,
+            "settingDisableRenderRequestBody": false,
+            "settingEncodeUrl": true,
+            "settingRebuildPath": true,
+            "settingFollowRedirects": "global",
+            "_type": "request"
+        },
+        {
+            "_id": "env_flux_dev",
+            "parentId": "wrk_flux_api",
+            "modified": 1707469200000,
+            "created": 1707469200000,
+            "name": "Development",
+            "data": {
+                "base_url": "http://localhost:8000",
+                "task_id": "REPLACE_WITH_TASK_ID"
+            },
+            "dataPropertyOrder": {
+                "&": [
+                    "base_url",
+                    "task_id"
+                ]
+            },
+            "color": null,
+            "isPrivate": false,
+            "metaSortKey": 1707469200000,
+            "_type": "environment"
+        },
+        {
+            "_id": "wrk_flux_api",
+            "parentId": null,
+            "modified": 1707469200000,
+            "created": 1707469200000,
+            "name": "Flux API",
+            "description": "Collection for testing Flux SERP to Context API",
+            "scope": "collection",
+            "_type": "workspace"
+        }
+    ]
+}
