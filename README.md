@@ -184,6 +184,22 @@ All services are accessible at the following endpoints:
 | **Prometheus**| [http://localhost:9090](http://localhost:9090) | Metric Collection |
 | **Redis** | `localhost:6380` | Cache (TCP) |
 
+
+## API Testing with Insomnia
+
+To test the API endpoints interactively, you can use the provided Insomnia collection.
+
+1.  **Install Insomnia**: [Download Insomnia](https://insomnia.rest/download).
+2.  **Import Collection**:
+    *   Open Insomnia.
+    *   Click on the "Create" button or the dropdown next to the workspace name.
+    *   Select "Import" and choose the `insomnia_collection.json` file from the root of this repository.
+3.  **Run Tests**:
+    *   Ensure your API is running (locally or via Docker).
+    *   Select the "Flux API" collection.
+    *   Use the "Search" request to send queries.
+    *   Use the "Get Task Status" request to check async results.
+
 ## Observability & Monitoring
 
 The system comes with a built-in monitoring stack to track scraping performance, latency, and costs.

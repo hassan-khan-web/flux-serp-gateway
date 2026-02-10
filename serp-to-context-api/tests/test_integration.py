@@ -1,7 +1,7 @@
 import pytest
 import os
 import asyncio
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch, MagicMock, AsyncMock
 from testcontainers.postgres import PostgresContainer
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 from sqlalchemy.future import select
@@ -162,7 +162,6 @@ def test_integration_sync_wrapper(db_url):
     """
     Synchronous wrapper to run the integration test.
     """
-    # 1. Patch DB engine
     from app.db import database
     test_engine = create_async_engine(db_url, echo=False)
     database.engine = test_engine
@@ -170,14 +169,9 @@ def test_integration_sync_wrapper(db_url):
         test_engine, class_=AsyncSession, expire_on_commit=False
     )
     
-    # 2. Mock scraper
-    # mock_fetch returns a valid HTML or Dict that parser accepts.
-    # If mode="search", it calls fetch_results -> parser.parse(dict/str)
-    
-    with patch("app.services.scraper.scraper.fetch_results") as mock_fetch:
-        # Mocking return value of async function called via run_until_complete
-        future = asyncio.Future()
-        future.set_result({
+    with patch("app.services.scraper.scraper.fetch_results", new_callable=AsyncMock) as mock_fetch:
+        # Return the dict that the parser expects
+        mock_fetch.return_value = {
             "results": [
                 {
                     "title": "Integration Title",
@@ -186,17 +180,7 @@ def test_integration_sync_wrapper(db_url):
                 }
             ],
             "answer": "AI Answer"
-        })
-        mock_fetch.return_value = future
-
-        # 3. Call worker
-        # For Celery tasks with bind=True, we call directly without mocking 'self'
-        # Celery will handle passing the task instance automatically
-        
-        # Call the worker!
-        # This will create a loop and run_until_complete inside.
-        # Since we are in a sync function (pytest run), get_event_loop might fail or return a new one.
-        # This is safe.
+        }
         
         result = scrape_and_process(
             query="test query",
@@ -211,8 +195,6 @@ def test_integration_sync_wrapper(db_url):
         assert len(result["organic_results"]) > 0
         assert result["organic_results"][0]["title"] == "Integration Title"
 
-    # 4. Verify DB
-    # Now we need to define an async verification function and run it
     
     async def verify_db():
         async with database.AsyncSessionLocal() as session:
@@ -223,8 +205,6 @@ def test_integration_sync_wrapper(db_url):
             assert rows[0].title == "Integration Title"
             assert rows[0].url == "https://integration.com"
 
-    # We can reuse the loop created by worker? No, worker might have closed it or used a different one.
-    # We create a new loop for verification
     loop = asyncio.new_event_loop()
     loop.run_until_complete(verify_db())
     loop.close()
