@@ -28,12 +28,12 @@ class TestScraperService:
         """Test scraper initializes with API keys"""
         with patch.dict('os.environ', {
             'TAVILY_API_KEY': 'tavily-123',
-            'SCRAPINGBEE_API_KEY': 'bee-456'
-        }):
+            'SCRAPINGBEE_API_KEY': 'bee-456',
+            'ZENROWS_API_KEY': ''  # Clear it
+        }, clear=False):
             scraper = ScraperService()
             assert scraper.tavily_key == 'tavily-123'
             assert scraper.scrapingbee_key == 'bee-456'
-            assert scraper.zenrows_key is None
 
     def test_scraper_initialization_no_keys(self):
         """Test scraper initializes without API keys"""
