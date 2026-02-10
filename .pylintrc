@@ -1,0 +1,95 @@
+[MASTER]
+# A comma-separated list of package or module names from where C extensions may
+# be loaded
+extension-pkg-whitelist=
+
+# Specify a configuration file.
+#init-hook=
+
+# Tells whether to load C extensions modules. This can be useful if you want to
+# prevent loading a broken C extension or avoid running arbitrary C code from
+# an imported package.
+unsafe-load-any-extension=no
+
+# List of module names for which member attributes should not be checked
+# (useful for modules/projects where namespaces are manipulated during runtime
+# and thus existing member attributes cannot be deduced by static analysis)
+ignored-modules=
+
+# List of class names to ignore when checking for redefined builtins.
+redefining-builtins-modules=six.moves,past.builtins,future.builtins,builtins,io
+
+[MESSAGES CONTROL]
+disable=
+    C0111,  # Missing module docstring
+    C0103,  # Invalid name
+    R0913,  # Too many arguments
+    R0914,  # Too many local variables
+    W0212,  # Access to protected member
+    R0903,  # Too few public methods
+    R0904,  # Too many public methods
+    C0301,  # Line too long (let flake8 handle)
+    E1101,  # Module has no member
+
+[VARIABLES]
+# A regular expression matching the name of dummy variables
+dummy-variables-rgx=_+$|^dummy_|^unused_
+
+# Argument names that match this expression will be ignored
+ignored-argument-names=_.*|^args$|^kwargs$
+
+[FORMAT]
+max-line-length=120
+indent-string='    '
+
+[BASIC]
+# Good variable names which should always be accepted
+good-names=i,j,k,ex,Run,_,id
+
+# Bad variable names which should always be rejected
+bad-names=foo,bar,baz,toto,tutu,tata
+
+[DESIGN]
+# Maximum number of arguments for function / method
+max-args=10
+
+# Maximum number of attributes for a class
+max-attributes=10
+
+# Maximum number of boolean expressions in an if statement
+max-bool-expr=5
+
+# Maximum number of branch for function / method body
+max-branches=20
+
+# Maximum number of locals for function / method body
+max-locals=20
+
+# Maximum number of parents for a class
+max-parents=7
+
+# Maximum number of public methods for a class
+max-public-methods=20
+
+# Maximum number of return / yield for function / method body
+max-returns=6
+
+# Maximum number of statements in function / method body
+max-statements=50
+
+[IMPORTS]
+allow-wildcard-with-all=no
+
+[CLASSES]
+# List of method names used to declare an abstract method
+defining-attr-methods=__init__,__new__,setUp,__post_init__
+
+# List of member names, which should be excluded from the protected access
+# warning.
+exclude-protected=_asdict,_fields,_replace,_source,_make
+
+# List of valid names for the first argument in a class method
+valid-classmethod-first-arg=cls
+
+# List of valid names for the first argument in a method
+valid-metaclass-classmethod-first-arg=cls

@@ -74,6 +74,22 @@ jobs:
         # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
         flake8 serp-to-context-api/app serp-to-context-api/tests --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics --exclude=pro_venv,.git,.pytest_cache
 
+    - name: Type Check with mypy
+      run: |
+        # Run mypy type checking on app code
+        mypy serp-to-context-api/app --config-file=mypy.ini --ignore-missing-imports --json > /tmp/mypy-report.json || true
+        # Display summary
+        mypy serp-to-context-api/app --config-file=mypy.ini --ignore-missing-imports
+      continue-on-error: true
+
+    - name: Code Quality with pylint
+      run: |
+        # Run pylint on app code
+        pylint serp-to-context-api/app --rcfile=.pylintrc --exit-zero --output-format=json > /tmp/pylint-report.json || true
+        # Display summary
+        pylint serp-to-context-api/app --rcfile=.pylintrc --exit-zero
+      continue-on-error: true
+
     - name: Run Tests with Coverage
       env:
         # Use the service container credentials
@@ -101,6 +117,16 @@ jobs:
         path: |
           htmlcov/
           coverage.xml
+        retention-days: 30
+
+    - name: Upload Type Checking Reports
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: type-checking-reports
+        path: |
+          /tmp/mypy-report.json
+          /tmp/pylint-report.json
         retention-days: 30
 
     - name: Upload Security Reports

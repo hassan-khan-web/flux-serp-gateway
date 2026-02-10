@@ -1,6 +1,8 @@
 import asyncio
 import os
+from typing import Any, Dict
 from celery import Celery
+from celery.app.task import Task
 from app.services.scraper import scraper
 from app.services.parser import parser
 from app.services.formatter import formatter
@@ -11,9 +13,9 @@ from app.db.repository import save_search_results
 from app.utils.logger import logger
 
 
-REDIS_URL = os.getenv("REDIS_URL", "redis://localhost:6379/0")
+REDIS_URL: str = os.getenv("REDIS_URL", "redis://localhost:6379/0")
 
-celery_app = Celery(
+celery_app: Celery = Celery(
     "flux_worker",
     broker=REDIS_URL,
     backend=REDIS_URL
@@ -28,9 +30,18 @@ celery_app.conf.update(
 )
 
 @celery_app.task(bind=True, name="app.worker.scrape_and_process")
-def scrape_and_process(self, query: str, region: str, language: str, limit: int, mode: str, output_format: str):
+def scrape_and_process(
+    self: Task[Any],
+    query: str,
+    region: str,
+    language: str,
+    limit: int,
+    mode: str,
+    output_format: str
+) -> Dict[str, Any]:
+    """Async task to scrape content and process results."""
     try:
-        cached_data = cache.get(query, region, language, limit)
+        cached_data: Dict[str, Any] | None = cache.get(query, region, language, limit)
         if cached_data:
             return cached_data
 
