@@ -79,9 +79,7 @@ class ParserService:
             r"Credit:.*", 
             r"Image:.*",
             r"Source:.*",
-            r"
-            r"
-            r"
+
             r"\*\*\[.*?\]\(.*?\)\*\*" 
         ]
         

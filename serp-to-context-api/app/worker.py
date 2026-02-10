@@ -31,7 +31,7 @@ celery_app.conf.update(
 
 @celery_app.task(bind=True, name="app.worker.scrape_and_process")
 def scrape_and_process(
-    self: Task[Any],
+    self: Task,
     query: str,
     region: str,
     language: str,
