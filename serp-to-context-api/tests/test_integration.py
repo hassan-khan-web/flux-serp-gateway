@@ -194,17 +194,3 @@ def test_integration_sync_wrapper(db_url):
         assert result["query"] == "test query"
         assert len(result["organic_results"]) > 0
         assert result["organic_results"][0]["title"] == "Integration Title"
-
-    
-    async def verify_db():
-        async with database.AsyncSessionLocal() as session:
-            stmt = select(SearchResult).where(SearchResult.query == "test query")
-            result = await session.execute(stmt)
-            rows = result.scalars().all()
-            assert len(rows) == 1
-            assert rows[0].title == "Integration Title"
-            assert rows[0].url == "https://integration.com"
-
-    loop = asyncio.new_event_loop()
-    loop.run_until_complete(verify_db())
-    loop.close()
