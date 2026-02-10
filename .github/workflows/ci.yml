@@ -49,7 +49,23 @@ jobs:
         python -m pip install --upgrade pip
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
         # Install dev dependencies if not in requirements.txt
-        pip install flake8 pytest pytest-asyncio pytest-mock httpx pytest-cov coverage
+        pip install flake8 pytest pytest-asyncio pytest-mock httpx pytest-cov coverage bandit safety
+
+    - name: Security Scan - Bandit
+      run: |
+        # Scan for common security issues in code
+        bandit -r serp-to-context-api/app -f json -o /tmp/bandit-report.json || true
+        # Display summary
+        bandit -r serp-to-context-api/app -v
+      continue-on-error: true
+
+    - name: Security Scan - Safety
+      run: |
+        # Check for vulnerable dependencies
+        safety check --json > /tmp/safety-report.json || true
+        # Display summary
+        safety check || true
+      continue-on-error: true
 
     - name: Lint with flake8
       run: |
@@ -85,6 +101,16 @@ jobs:
         path: |
           htmlcov/
           coverage.xml
+        retention-days: 30
+
+    - name: Upload Security Reports
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: security-reports
+        path: |
+          /tmp/bandit-report.json
+          /tmp/safety-report.json
         retention-days: 30
 
     - name: Comment PR with Coverage
