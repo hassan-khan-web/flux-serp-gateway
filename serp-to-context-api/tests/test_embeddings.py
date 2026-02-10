@@ -122,7 +122,7 @@ class TestEmbeddingsService:
         mock_model.encode.return_value = embedding_array
 
         service = EmbeddingsService()
-        result = service.generate(["Text with @#$%^&*() and symbols!"])
+        result = service.generate(["Text with @
 
         assert result is not None
 

@@ -86,9 +86,7 @@ def scrape_and_process(
                     if i < len(vectors):
                          res["embedding"] = vectors[i]
 
-        # Save to Database
         try:
-            # Initialize DB tables (ensure they exist)
             loop.run_until_complete(init_db())
             
             async def _save():

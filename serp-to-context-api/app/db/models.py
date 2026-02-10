@@ -11,5 +11,5 @@ class SearchResult(Base):
     title = Column(String)
     snippet = Column(Text)
     score = Column(Float)
-    embedding = Column(JSON, nullable=True) # Using JSON for vector for now, pgvector needs specific type but JSON is safer default without extension
+    embedding = Column(JSON, nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())

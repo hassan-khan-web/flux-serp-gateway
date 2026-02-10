@@ -219,7 +219,6 @@ class TestWorkerTask:
         mock_init_db = AsyncMock(side_effect=Exception("DB init error"))
         mock_init.side_effect = lambda: mock_init_db()
         
-        # Should still return result even if DB fails
         result = scrape_and_process("test", "us", "en", 10, "search", "json")
         
         assert result is not None

@@ -51,7 +51,7 @@ class TestFormatterService:
                 {
                     "title": f"Result {i}",
                     "url": f"https://result{i}.com",
-                    "snippet": f"Snippet {i}" * 5  # Longer to avoid similarity
+                    "snippet": f"Snippet {i}" * 5
                 }
                 for i in range(3)
             ]
@@ -84,7 +84,7 @@ class TestFormatterService:
     def test_format_response_special_characters(self, formatter):
         """Test formatting with special characters"""
         parsed_data = {
-            "ai_overview": "Test with special chars: @#$%^&*()",
+            "ai_overview": "Test with special chars: @
             "organic_results": [
                 {
                     "title": "Result with © symbol",
@@ -142,7 +142,7 @@ class TestFormatterService:
             "organic_results": [
                 {
                     "title": "Result",
-                    "url": "https://example.com/path?query=value&other=123#anchor",
+                    "url": "https://example.com/path?query=value&other=123
                     "snippet": "Snippet"
                 }
             ]
@@ -221,14 +221,13 @@ class TestFormatterService:
                 {
                     "title": "Result",
                     "url": "https://example.com/2",
-                    "snippet": "Python is a programming language used for many purposes"  # Identical
+                    "snippet": "Python is a programming language used for many purposes"
                 }
             ]
         }
 
         result = formatter.format_response("query", parsed_data)
 
-        # Should deduplicate similar snippets
         assert len(result["organic_results"]) >= 1
 
     def test_format_response_markdown_generation(self, formatter):

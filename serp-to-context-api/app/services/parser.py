@@ -79,9 +79,9 @@ class ParserService:
             r"Credit:.*", 
             r"Image:.*",
             r"Source:.*",
-            r"## Related Stories",
-            r"## Want to \?",
-            r"## Click below to access",
+            r"
+            r"
+            r"
             r"\*\*\[.*?\]\(.*?\)\*\*" 
         ]
         
@@ -164,7 +164,7 @@ class ParserService:
                     "title": "Extracted Content",
                     "url": content.get("url", ""),
                     "snippet": cleaned_snippet,
-                    "score": self._calculate_credibility(content.get("url", "")) # Add score
+                    "score": self._calculate_credibility(content.get("url", ""))
                 }]
             }
             

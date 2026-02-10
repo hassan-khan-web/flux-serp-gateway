@@ -26,13 +26,10 @@ class TestParserService:
         parser = ParserService()
         result = parser.parse(minimal_html_content)
         
-        # Check structure
         assert "organic_results" in result
         assert "ai_overview" in result
         
         results = result["organic_results"]
-        # We expect at least one result from our minimal HTML (the "Test Result Title")
-        # The "Ad Result" should be filtered out.
         assert len(results) >= 1
         
         first_result = results[0]
@@ -47,7 +44,6 @@ class TestParserService:
         it should NOT crash.
         """
         parser = ParserService()
-        # This shouldn't raise an exception
         result = parser.parse(mock_html_content)
         
         assert isinstance(result, dict)

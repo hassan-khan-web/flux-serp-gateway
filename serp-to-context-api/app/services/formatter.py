@@ -57,10 +57,10 @@ class FormatterService:
             return results 
 
     def _generate_markdown(self, query: str, ai_overview: str, results: List[Dict]) -> str:
-        md = [f"# Search Results for: {query}\n"]
+        md = [f"
         
         if ai_overview:
-            md.append(f"## AI Overview\n> {ai_overview}\n")
+            md.append(f"
             md.append("---\n")
             
         sorted_results = sorted(results, key=lambda x: x.get("score", 0.0), reverse=True)
@@ -69,7 +69,7 @@ class FormatterService:
             score = res.get("score", 0.0)
             score_label = f"(Credibility Score: {score})" if score > 0 else ""
             
-            md.append(f"## {idx}. {res.get('title', 'No Title')} {score_label}")
+            md.append(f"
             md.append(f"URL: {res.get('url', 'No URL')}")
             md.append(f"Snippet: {res.get('snippet', '')}\n")
             

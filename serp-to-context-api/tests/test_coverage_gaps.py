@@ -18,7 +18,6 @@ class TestCacheServiceGaps:
         cache = CacheService()
         cache.set("query", {"data": "value"}, "us", "en", 10)
         
-        # Verify setex was called
         mock_client.setex.assert_called()
 
     @patch("app.utils.cache.redis.from_url")
@@ -54,7 +53,6 @@ class TestCacheServiceGaps:
         mock_client.setex.side_effect = Exception("Redis error")
         
         cache = CacheService()
-        # Should handle gracefully without raising
         cache.set("query", {"data": "value"}, "us", "en", 10)
 
     @patch("app.utils.cache.redis.from_url")
@@ -67,7 +65,6 @@ class TestCacheServiceGaps:
         cache = CacheService()
         result = cache.get("query", "us", "en", 10)
         
-        # Should return None on error
         assert result is None
 
     @patch("app.utils.cache.redis.from_url")
@@ -77,14 +74,11 @@ class TestCacheServiceGaps:
         
         cache = CacheService()
         
-        # Client should be None
         assert cache.client is None
         
-        # Get should return None
         result = cache.get("query")
         assert result is None
         
-        # Set should handle gracefully
         cache.set("query", {"data": "value"})
 
 
@@ -98,7 +92,6 @@ class TestEmbeddingsModelLoadingGaps:
         
         service = EmbeddingsService()
         
-        # Model should be None after failure
         assert service.model is None
 
     @patch("sentence_transformers.SentenceTransformer", side_effect=ImportError("sentence_transformers not installed"))
@@ -106,7 +99,6 @@ class TestEmbeddingsModelLoadingGaps:
         """Test embeddings handles missing import"""
         service = EmbeddingsService()
         
-        # Should gracefully handle import error
         assert service.model is None
 
 
@@ -126,7 +118,6 @@ class TestWorkerEventLoopGaps:
         """Test worker creates new event loop on RuntimeError"""
         from app.worker import scrape_and_process
         
-        # Simulate RuntimeError when getting existing loop
         mock_get_loop.side_effect = RuntimeError("No running event loop")
         
         mock_cache.get.return_value = None
@@ -138,7 +129,6 @@ class TestWorkerEventLoopGaps:
         }
         mock_embeddings.generate.return_value = []
         
-        # Should handle RuntimeError and create new loop
         result = scrape_and_process("test", "us", "en", 10, "search", "json")
         
         assert result is not None
@@ -210,11 +200,9 @@ class TestCacheKeyGeneration:
         
         cache = CacheService()
         
-        # Same query, different regions should generate different keys
         cache.get("python", "us", "en", 10)
         cache.get("python", "uk", "en", 10)
         
-        # Should call get twice with different keys
         assert mock_client.get.call_count == 2
 
     @patch("app.utils.cache.redis.from_url")
@@ -226,11 +214,9 @@ class TestCacheKeyGeneration:
         
         cache = CacheService()
         
-        # Same query, different languages should generate different keys
         cache.get("python", "us", "en", 10)
         cache.get("python", "us", "es", 10)
         
-        # Should call get twice with different keys
         assert mock_client.get.call_count == 2
 
     @patch("app.utils.cache.redis.from_url")
@@ -242,9 +228,7 @@ class TestCacheKeyGeneration:
         
         cache = CacheService()
         
-        # Same query, different limits should generate different keys
         cache.get("python", "us", "en", 10)
         cache.get("python", "us", "en", 20)
         
-        # Should call get twice with different keys
         assert mock_client.get.call_count == 2

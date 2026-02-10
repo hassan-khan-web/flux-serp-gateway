@@ -14,7 +14,7 @@ async def save_search_results(session: AsyncSession, query: str, results: List[D
             title=res.get("title"),
             snippet=res.get("snippet"),
             score=res.get("score", 0.0),
-            embedding=res.get("embedding") # expecting list of floats
+            embedding=res.get("embedding")
         )
         session.add(db_item)
     

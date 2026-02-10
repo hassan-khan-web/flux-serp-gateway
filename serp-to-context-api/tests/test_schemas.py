@@ -16,11 +16,11 @@ class TestSearchRequestSchema:
         request = SearchRequest(query="python")
         
         assert request.query == "python"
-        assert request.region == "us"  # default
-        assert request.language == "en"  # default
-        assert request.limit == 10  # default
-        assert request.mode == "search"  # default
-        assert request.output_format == "markdown"  # default
+        assert request.region == "us"
+        assert request.language == "en"
+        assert request.limit == 10
+        assert request.mode == "search"
+        assert request.output_format == "markdown"
 
     def test_search_request_full(self):
         """Test creating SearchRequest with all fields"""
@@ -58,7 +58,6 @@ class TestSearchRequestSchema:
 
     def test_search_request_limit_negative(self):
         """Test that negative limit is accepted (validation not enforced)"""
-        # Pydantic doesn't validate negative by default
         request = SearchRequest(query="test", limit=-5)
         assert request.limit == -5
 
@@ -82,8 +81,8 @@ class TestOrganicResultSchema:
         assert result.title == "Example Title"
         assert result.url == "https://example.com"
         assert result.snippet == "This is a snippet"
-        assert result.score == 0.0  # default
-        assert result.embedding is None  # default
+        assert result.score == 0.0
+        assert result.embedding is None
 
     def test_organic_result_full(self):
         """Test OrganicResult with all fields"""
@@ -115,7 +114,6 @@ class TestOrganicResultSchema:
 
     def test_organic_result_score_bounds(self):
         """Test that score outside 0-1 range is accepted"""
-        # Pydantic float doesn't enforce bounds by default
         result = OrganicResult(
             title="Test",
             url="https://test.com",
@@ -132,17 +130,17 @@ class TestSearchResponseSchema:
         """Test creating SearchResponse with required fields"""
         response = SearchResponse(
             query="test",
-            formatted_output="# Test\nFormatted output",
+            formatted_output="
             token_estimate=100,
             cached=False
         )
         
         assert response.query == "test"
-        assert response.formatted_output == "# Test\nFormatted output"
+        assert response.formatted_output == "
         assert response.token_estimate == 100
         assert response.cached is False
-        assert response.ai_overview is None  # optional
-        assert response.organic_results == []  # default
+        assert response.ai_overview is None
+        assert response.organic_results == []
 
     def test_search_response_full(self):
         """Test SearchResponse with all fields"""
@@ -165,7 +163,7 @@ class TestSearchResponseSchema:
             query="python programming",
             ai_overview="Python is a versatile language",
             organic_results=results,
-            formatted_output="# Python Programming\nDetails...",
+            formatted_output="
             token_estimate=250,
             cached=True
         )

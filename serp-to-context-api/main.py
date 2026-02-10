@@ -26,17 +26,14 @@ if os.path.isdir(STATIC_DIR):
 
 @app.get("/")
 async def read_index() -> FileResponse:
-    """Read and return the index.html file."""
     return FileResponse(os.path.join(STATIC_DIR, 'index.html'))
 
 app.include_router(router)
 
 @app.on_event("startup")
 async def startup_event() -> None:
-    """Execute on application startup."""
     logger.info("Application starting up...")
 
 @app.get("/health")
 async def health_check() -> Dict[str, str]:
-    """Health check endpoint."""
     return {"status": "ok"}

@@ -6,7 +6,6 @@ from app.api.routes import router
 from fastapi import FastAPI
 from app.api.schemas import SearchRequest, SearchResponse, TaskResponse
 
-# Create a test app with the router
 app = FastAPI()
 app.include_router(router)
 client = TestClient(app)
@@ -54,7 +53,6 @@ class TestSearchEndpoint:
             assert response.status_code == 202
             assert response.json()["task_id"] == "task-456"
             
-            # Verify defaults were used
             mock_delay.assert_called_once()
             call_kwargs = mock_delay.call_args[1]
             assert call_kwargs["region"] == "us"
@@ -80,11 +78,10 @@ class TestSearchEndpoint:
             "/search",
             json={
                 "region": "us"
-                # Missing required 'query' field
             }
         )
 
-        assert response.status_code == 422  # Validation error
+        assert response.status_code == 422
 
 
 class TestGetTaskStatus:
@@ -124,7 +121,7 @@ class TestGetTaskStatus:
                         "score": 0.9
                     }
                 ],
-                "formatted_output": "# Python\nPython is...",
+                "formatted_output": "
                 "token_estimate": 150
             }
             mock_async_result.return_value = mock_result

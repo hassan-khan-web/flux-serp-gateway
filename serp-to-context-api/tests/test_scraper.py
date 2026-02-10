@@ -29,7 +29,7 @@ class TestScraperService:
         with patch.dict('os.environ', {
             'TAVILY_API_KEY': 'tavily-123',
             'SCRAPINGBEE_API_KEY': 'bee-456',
-            'ZENROWS_API_KEY': ''  # Clear it
+            'ZENROWS_API_KEY': ''
         }, clear=False):
             scraper = ScraperService()
             assert scraper.tavily_key == 'tavily-123'
@@ -164,7 +164,7 @@ class TestScraperService:
 
         with patch.object(scraper, '_fetch_tavily_extract', new_callable=AsyncMock) as mock_extract:
             with patch.object(scraper, '_fetch_scrapingbee', new_callable=AsyncMock) as mock_bee:
-                mock_extract.return_value = None  # Tavily fails
+                mock_extract.return_value = None
                 mock_bee.return_value = mock_html
 
                 result = await scraper.scrape_url("https://example.com")
@@ -211,8 +211,6 @@ class TestScraperService:
                 mock_tavily.side_effect = Exception("Network error")
                 mock_direct.return_value = None
 
-                # Since _fetch_tavily fails, it should try other methods
-                # This depends on implementation
 
     @pytest.mark.asyncio
     async def test_fetch_results_rate_limit_handling(self, scraper):
@@ -252,7 +250,7 @@ class TestScraperEdgeCases:
     @pytest.mark.asyncio
     async def test_very_long_query(self, scraper):
         """Test scraper with very long query"""
-        long_query = "python " * 1000  # Very long query
+        long_query = "python " * 1000
         
         with patch.object(scraper, '_fetch_tavily', new_callable=AsyncMock) as mock_tavily:
             mock_tavily.return_value = {"results": []}
@@ -264,7 +262,7 @@ class TestScraperEdgeCases:
     @pytest.mark.asyncio
     async def test_special_characters_in_query(self, scraper):
         """Test scraper with special characters"""
-        query = "python @#$%^&*()"
+        query = "python @
         
         with patch.object(scraper, '_fetch_tavily', new_callable=AsyncMock) as mock_tavily:
             mock_tavily.return_value = {"results": []}
@@ -299,7 +297,6 @@ class TestScraperEdgeCases:
         with patch.object(scraper, '_fetch_tavily', new_callable=AsyncMock) as mock_tavily:
             mock_tavily.return_value = {"results": []}
 
-            # Run multiple concurrent requests
             tasks = [
                 scraper.fetch_results(f"query{i}") for i in range(5)
             ]

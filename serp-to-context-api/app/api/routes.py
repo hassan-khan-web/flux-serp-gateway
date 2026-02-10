@@ -9,7 +9,6 @@ router: APIRouter = APIRouter()
 
 @router.post("/search", response_model=TaskResponse, status_code=202)
 async def search_endpoint(request: SearchRequest) -> TaskResponse:
-    """Handle search requests and create async tasks."""
     try:
         task = scrape_and_process.delay(
             query=request.query,
@@ -31,7 +30,6 @@ async def search_endpoint(request: SearchRequest) -> TaskResponse:
 
 @router.get("/tasks/{task_id}", response_model=TaskResponse)
 async def get_task_status(task_id: str) -> TaskResponse:
-    """Get the status and result of a task."""
     try:
         task_result = AsyncResult(task_id)
         

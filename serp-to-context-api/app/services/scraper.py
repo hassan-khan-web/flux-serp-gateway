@@ -102,7 +102,6 @@ class ScraperService:
             data = await self._fetch_tavily_extract(url)
             if data: return data
 
-        # Priority 2: Standard Scrapers (return HTML)
         html = None
         if self.scrapingbee_key:
             html = await self._fetch_scrapingbee(url)

@@ -25,19 +25,12 @@ def db_url():
         container.with_env("POSTGRES_PASSWORD", "test_pass")
         container.with_env("POSTGRES_DB", "test_db")
         container.start()
-        # We need to stop it eventually. Pytest fixtures with yield are good for this.
-        # But since we conditionally start it, we can't easily yield in one path and return in another 
-        # without a wrapper.
-        # Simple hack: start it here, register cleanup.
-        # Or better: separating fixtures.
         return container.get_connection_url(driver="asyncpg")
     except ImportError:
         pytest.skip("testcontainers not installed")
     except Exception as e:
         pytest.skip(f"Docker not available or Testcontainers failed: {e}")
 
-# We removed the 'postgres_container' fixture and integrated logic into 'db_url'
-# But we need cleanup. Proper way:
 
 @pytest.fixture(scope="module")
 def postgres_container():
@@ -78,17 +71,9 @@ async def test_full_flow_with_db(db_url):
     3. Calls the worker task (scrape_and_process).
     4. Verifies data is saved to the Postgres DB.
     """
-    # Patch the DATABASE_URL in the app.db.database module
-    # We need to reload or patch where it's used. 
-    # Since 'engine' is global in app.db.database, patching os.environ might not be enough if it's already imported.
-    # We will patch the 'engine' object or 'AsyncSessionLocal'.
     
     with patch.dict(os.environ, {"DATABASE_URL": db_url}):
-        # We need to re-create the engine because it's usually created at module level
-        # A simpler way for testing is to mock the internal engine or session factory
-        # But 'worker.py' imports 'init_db' and 'AsyncSessionLocal'.
         
-        # Let's import the module and modify the engine for this test
         from app.db import database
         
         test_engine = create_async_engine(db_url, echo=True)
@@ -97,7 +82,6 @@ async def test_full_flow_with_db(db_url):
             test_engine, class_=database.AsyncSession, expire_on_commit=False
         )
 
-        # Mock the scraper to avoid hitting Google
         mock_content = {
             "results": [
                 {
@@ -109,55 +93,24 @@ async def test_full_flow_with_db(db_url):
             "answer": "AI Answer"
         }
         
-        # We mock scraper.fetch_results which is called in 'else' block (mode="search")
         with patch("app.services.scraper.scraper.fetch_results", new_callable=MagicMock) as mock_fetch:
-            # The worker calls loop.run_until_complete(fetch_results)
-            # fetch_results is an async function (coroutine).
-            # So the mock should return a coroutine result or a future.
             f = asyncio.Future()
             f.set_result(mock_content)
             mock_fetch.return_value = f
 
-            # Also mock parser.parse to return something consistent with our mock_content
-            # Actually weak mock: let's mock the scraper return value to be compatible with parser.parse
-            # parser.parse expects dict with 'results' key if it's a dict.
-            # See parser.py line 9.
             
-            # Run the worker task
-            # scrape_and_process is a Celery task, but we can call it as a function?
-            # It's decorated. The original function is accessible via .run usually if bind=True?
-            # Or just call it.
             
-            # The worker creates its own loop given it checks for running loop.
-            # In pytest-asyncio, there is already a loop running?
-            # worker trying to do `loop = asyncio.get_event_loop()` might fail or succeed.
-            # But line 34: `loop = asyncio.get_event_loop()`
             
-            # We call the synchronous wrapper
-            # It will try to use a loop.
             
-            # Issue: 'test_full_flow_with_db' is async, so a loop is running.
-            # 'worker.py' calls `loop.run_until_complete`.
-            # `run_until_complete` cannot be called when the loop is already running.
-            # This is a common issue testing sync wrappers around async code.
             
-            # Workaround: patch 'asyncio.get_event_loop' to return the current running loop?
-            # No, `run_until_complete` will raise error if loop is running.
             
-            # We should probably run this test synchronously and let the worker manage the loop,
-            # OR patch the worker to use `await` if we can.
             
-            # Let's run the test synchronously (remove @pytest.mark.asyncio), create a fresh loop for the worker if needed.
-            # But we need async to talk to DB to verify.
             pass
 
 @pytest.mark.asyncio
 async def test_verify_db_insertion(db_url):
-    # This separation is tricky.
-    # Let's write a SYNCHRONOUS test function that uses `asyncio.run` internally for verification?
     pass
 
-# Redefining the test as synchronous to avoid loop conflict with worker's internals
 def test_integration_sync_wrapper(db_url):
     """
     Synchronous wrapper to run the integration test.
@@ -170,7 +123,6 @@ def test_integration_sync_wrapper(db_url):
     )
     
     with patch("app.services.scraper.scraper.fetch_results", new_callable=AsyncMock) as mock_fetch:
-        # Return the dict that the parser expects
         mock_fetch.return_value = {
             "results": [
                 {
