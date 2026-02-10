@@ -36,21 +36,29 @@ jobs:
       with:
         python-version: "3.10"
 
+    - name: Cache pip packages
+      uses: actions/cache@v3
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-
+
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-        # Install dev dependencies if not in requirements.txt (e.g. flake8)
-        pip install flake8 pytest pytest-asyncio pytest-mock httpx
+        # Install dev dependencies if not in requirements.txt
+        pip install flake8 pytest pytest-asyncio pytest-mock httpx pytest-cov coverage
 
     - name: Lint with flake8
       run: |
         # stop the build if there are Python syntax errors or undefined names
-        flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+        flake8 serp-to-context-api/app serp-to-context-api/tests --count --select=E9,F63,F7,F82 --show-source --statistics
         # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
-        flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+        flake8 serp-to-context-api/app serp-to-context-api/tests --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics --exclude=pro_venv,.git,.pytest_cache
 
-    - name: Run Tests
+    - name: Run Tests with Coverage
       env:
         # Use the service container credentials
         TEST_DATABASE_URL: postgresql+asyncpg://test_user:test_pass@localhost:5432/test_db
@@ -60,5 +68,29 @@ jobs:
         ZENROWS_API_KEY: mock_key
         TAVILY_API_KEY: mock_key
       run: |
-        # Run tests from the root, pointing to the test directory
-        pytest serp-to-context-api/tests/
+        # Run tests with coverage measurement
+        pytest serp-to-context-api/tests/ \
+          --cov=serp-to-context-api/app \
+          --cov-report=xml \
+          --cov-report=html \
+          --cov-report=term-missing \
+          --cov-fail-under=70 \
+          -v
+
+    - name: Upload Coverage Reports
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: coverage-report
+        path: |
+          htmlcov/
+          coverage.xml
+        retention-days: 30
+
+    - name: Comment PR with Coverage
+      if: github.event_name == 'pull_request'
+      uses: py-cov-action/python-coverage-comment-action@v3
+      with:
+        GITHUB_TOKEN: ${{ github.token }}
+        MINIMUM_GREEN: 80
+        MINIMUM_ORANGE: 70

@@ -1,0 +1,30 @@
+[run]
+# What to measure
+source = serp-to-context-api/app
+branch = True
+omit =
+    */migrations/*
+    */venv/*
+    */__pycache__/*
+    */site-packages/*
+    serp-to-context-api/app/utils/logger.py
+
+[report]
+# Reporting options
+precision = 2
+show_missing = True
+skip_covered = False
+exclude_lines =
+    pragma: no cover
+    def __repr__
+    raise AssertionError
+    raise NotImplementedError
+    if __name__ == .__main__.:
+    if TYPE_CHECKING:
+    @abstractmethod
+    @abc.abstractmethod
+    if typing.TYPE_CHECKING:
+
+[html]
+# HTML report output
+directory = htmlcov
