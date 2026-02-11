@@ -116,13 +116,6 @@ jobs:
           /tmp/safety-report.json
         retention-days: 30
 
-    - name: Comment PR with Coverage
-      if: github.event_name == 'pull_request'
-      uses: py-cov-action/python-coverage-comment-action@v3
-      with:
-        GITHUB_TOKEN: ${{ github.token }}
-        MINIMUM_GREEN: 80
-        MINIMUM_ORANGE: 70
 
   deploy:
     needs: test
