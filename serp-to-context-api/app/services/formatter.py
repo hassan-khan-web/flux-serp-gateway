@@ -1,4 +1,4 @@
-from typing import Dict, List
+from typing import Dict, List, Optional
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 from app.utils.logger import logger
@@ -10,7 +10,7 @@ class FormatterService:
         
         unique_results = self._deduplicate_results(organic)
         
-        markdown_output = self._generate_markdown(query, ai_overview, unique_results)
+        markdown_output = self._generate_markdown(query, ai_overview or "", unique_results)
         
         token_count = self._estimate_tokens(markdown_output)
 
@@ -37,7 +37,7 @@ class FormatterService:
             vectorizer = TfidfVectorizer().fit_transform(snippets)
             vectors = vectorizer.toarray()
             
-            kept_indices = []
+            kept_indices: List[int] = []
             
             for i in range(len(results)):
                 is_duplicate = False
@@ -56,7 +56,7 @@ class FormatterService:
             logger.error(f"Deduplication failed: {e}")
             return results 
 
-    def _generate_markdown(self, query: str, ai_overview: str, results: List[Dict]) -> str:
+    def _generate_markdown(self, query: str, ai_overview: Optional[str], results: List[Dict]) -> str:
         md = [f"# Search Results for: {query}\n"]
         
         if ai_overview:

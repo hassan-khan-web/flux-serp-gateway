@@ -86,11 +86,12 @@ class ParserService:
 
         
         cleaned_text = text
-        for pattern in noise_patterns:
-            cleaned_text = re.sub(pattern, "", cleaned_text, flags=re.IGNORECASE)
+        if cleaned_text:
+            for pattern in noise_patterns:
+                cleaned_text = re.sub(pattern, "", cleaned_text, flags=re.IGNORECASE)
             
         ui_phrases = ["Sign up", "Log in", "Login", "Get Started", "Subscribe", "Create account", "Continue reading"]
-        lines = cleaned_text.split('\n')
+        lines = (cleaned_text or "").split('\n')
         filtered_lines = []
         for line in lines:
             if any(phrase.lower() in line.lower() for phrase in ui_phrases):
@@ -179,7 +180,7 @@ class ParserService:
             "organic_results": [{
                 "title": "Scraped Page", 
                 "url": "", 
-                "snippet": cleaned_snippet[:15000],
+                "snippet": (cleaned_snippet or "")[:15000],
                 "score": 0.5 
             }]
         }
@@ -197,18 +198,19 @@ class ParserService:
         
         candidates = []
         
-        for child in body.find_all(recursive=False):
-            if not isinstance(child, Tag):
-                continue
+        if isinstance(body, Tag):
+            for child in body.find_all(recursive=False):
+                if not isinstance(child, Tag):
+                    continue
+                    
+                text = child.get_text(strip=True)
+                if len(text) < 100:
+                    continue
+                    
+                if re.search(r"(AI Overview|Generative AI|Summarized by AI)", text, re.IGNORECASE):
+                    return self._clean_text(text)
                 
-            text = child.get_text(strip=True)
-            if len(text) < 100:
-                continue
-                
-            if re.search(r"(AI Overview|Generative AI|Summarized by AI)", text, re.IGNORECASE):
-                return self._clean_text(text)
-            
-            candidates.append((len(text), text))
+                candidates.append((len(text), text))
 
         
         return None 
@@ -227,12 +229,15 @@ class ParserService:
         
         for h3 in title_tags:
             a_tag = h3.find_parent('a')
-            if not a_tag:
+            if not isinstance(a_tag, Tag):
                 continue
                 
             href = a_tag.get('href', '')
             
-            url = self._clean_url(href)
+            if isinstance(href, str):
+                url = self._clean_url(href)
+            else:
+                url = None
             
             if not url or url.startswith('/') or url in seen_urls:
                 continue
@@ -253,7 +258,7 @@ class ParserService:
                 if container and container.name == 'div':
                     if len(container.get_text()) > len(title) + 20: 
                         break
-                if container.parent:
+                if container and container.parent:
                     container = container.parent
             
             if container:

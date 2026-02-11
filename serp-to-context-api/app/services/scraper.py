@@ -2,7 +2,7 @@ import httpx
 import os
 import random
 import urllib.parse
-from typing import Optional, Union, Dict
+from typing import Optional, Union, Dict, Any
 from app.utils.logger import logger
 from prometheus_client import Counter, Histogram
 import time
@@ -57,8 +57,10 @@ class ScraperService:
                 if response.status_code == 200:
                     SCRAPE_REQUESTS.labels(provider="tavily_extract", status="success").inc()
                     data = response.json()
-                    if data.get("results"):
-                        return data["results"][0]
+                    if data.get("results") and isinstance(data["results"], list) and len(data["results"]) > 0:
+                        result = data["results"][0]
+                        if isinstance(result, dict):
+                            return result
                 
                 SCRAPE_REQUESTS.labels(provider="tavily_extract", status="error").inc()
                 logger.warning(f"Tavily Extract failed with status {response.status_code}: {response.text}")
@@ -88,7 +90,9 @@ class ScraperService:
 
                 if response.status_code == 200:
                     SCRAPE_REQUESTS.labels(provider="tavily_search", status="success").inc()
-                    return response.json()
+                    data = response.json()
+                    if isinstance(data, dict):
+                        return data
                 
                 SCRAPE_REQUESTS.labels(provider="tavily_search", status="error").inc()
                 logger.warning(f"Tavily failed with status {response.status_code}: {response.text}")
@@ -212,7 +216,7 @@ class ScraperService:
     async def _fetch_direct(self, url: str) -> Optional[str]:
         try:
             logger.info("Attempting direct fetch fallback...")
-            headers = {"User-Agent": random.choice(USER_AGENTS)}
+            headers = {"User-Agent": random.choice(USER_AGENTS)}  # nosec B311
             async with httpx.AsyncClient(timeout=10.0, follow_redirects=True) as client:
                 response = await client.get(url, headers=headers)
                 if response.status_code == 200:

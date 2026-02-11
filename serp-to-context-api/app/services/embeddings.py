@@ -25,7 +25,11 @@ class EmbeddingsService:
         
         try:
             embeddings = self.model.encode(texts)
-            return embeddings.tolist()
+            if hasattr(embeddings, "tolist"):
+                result = embeddings.tolist()
+                if isinstance(result, list):
+                    return result
+            return []
         except Exception as e:
             logger.error(f"Error generating embeddings: {e}")
             return []

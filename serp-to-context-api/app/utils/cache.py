@@ -1,7 +1,7 @@
 import os
 import hashlib
 import json
-from typing import Optional
+from typing import Optional, Dict, Any
 import redis
 from app.utils.logger import logger
 
@@ -9,7 +9,7 @@ class CacheService:
     def __init__(self):
         self.redis_url = os.getenv("REDIS_URL", "redis://localhost:6379/0")
         try:
-            self.client = redis.from_url(self.redis_url, decode_responses=True)
+            self.client: Optional[redis.Redis] = redis.from_url(self.redis_url, decode_responses=True)
             self.ttl = 6 * 60 * 60
             logger.info(f"Connected to Redis at {self.redis_url}")
         except Exception as e:
@@ -20,16 +20,18 @@ class CacheService:
         key_content = f"{query}:{region}:{language}:{limit}"
         return hashlib.sha256(key_content.encode()).hexdigest()
 
-    def get(self, query: str, region: Optional[str] = None, language: Optional[str] = None, limit: Optional[int] = 10) -> Optional[dict]:
+    def get(self, query: str, region: Optional[str] = None, language: Optional[str] = None, limit: Optional[int] = 10) -> Optional[Dict[str, Any]]:
         if not self.client:
             return None
         
         try:
             key = self._generate_key(query, region, language, limit)
             cached_data = self.client.get(key)
-            if cached_data:
+            if cached_data and isinstance(cached_data, str):
                 logger.info(f"Cache hit for query: {query}")
-                return json.loads(cached_data)
+                data = json.loads(cached_data)
+                if isinstance(data, dict):
+                    return data
             return None
         except Exception as e:
             logger.error(f"Cache get error: {e}")
