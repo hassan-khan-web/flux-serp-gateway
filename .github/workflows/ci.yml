@@ -43,13 +43,13 @@ jobs:
 
     - name: Security Scan - Bandit
       run: |
-        bandit -r serp-to-context-api/app -f json -o /tmp/bandit-report.json || true
+        bandit -r serp-to-context-api/app -f json -o bandit-report.json || true
         bandit -r serp-to-context-api/app -v
       continue-on-error: true
 
     - name: Security Scan - Safety
       run: |
-        safety check --json > /tmp/safety-report.json || true
+        safety check --json > safety-report.json || true
         safety check || true
       continue-on-error: true
 
@@ -60,13 +60,13 @@ jobs:
 
     - name: Type Check with mypy
       run: |
-        mypy serp-to-context-api/app --config-file=mypy.ini --ignore-missing-imports --json > /tmp/mypy-report.json || true
+        mypy serp-to-context-api/app --config-file=mypy.ini --ignore-missing-imports --json > mypy-report.json || true
         mypy serp-to-context-api/app --config-file=mypy.ini --ignore-missing-imports
       continue-on-error: true
 
     - name: Code Quality with pylint
       run: |
-        pylint serp-to-context-api/app --rcfile=.pylintrc --exit-zero --output-format=json > /tmp/pylint-report.json || true
+        pylint serp-to-context-api/app --rcfile=.pylintrc --exit-zero --output-format=json > pylint-report.json || true
         pylint serp-to-context-api/app --rcfile=.pylintrc --exit-zero
       continue-on-error: true
 
@@ -102,8 +102,8 @@ jobs:
       with:
         name: type-checking-reports
         path: |
-          /tmp/mypy-report.json
-          /tmp/pylint-report.json
+          mypy-report.json
+          pylint-report.json
         retention-days: 30
 
     - name: Upload Security Reports
@@ -112,8 +112,8 @@ jobs:
       with:
         name: security-reports
         path: |
-          /tmp/bandit-report.json
-          /tmp/safety-report.json
+          bandit-report.json
+          safety-report.json
         retention-days: 30
 
 
