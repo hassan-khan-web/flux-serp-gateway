@@ -169,7 +169,11 @@ The project uses GitHub Actions for Continuous Integration and Deployment.
 
 ### Automated Pipeline
 On every push to `main`:
-1.  **Test**: Runs `pytest`, `mypy`, `bandit`, and `flake8`.
+1.  **Test & Quality Gate**:
+    *   **Unit Tests**: Runs `pytest` with coverage tracking.
+    *   **Linting**: Enforces code style via `flake8`, `mypy` (type checking), and `pylint`.
+    *   **Security**: Scans for vulnerabilities with `bandit` and `safety`.
+    *   **Reporting**: Detailed test results and failure annotations are published directly to the GitHub PR/Commit view.
 2.  **Deploy**: If tests pass, builds Docker images for the API and Frontend and pushes them to GitHub Container Registry (GHCR).
 
 ### Manual Deployment
