@@ -121,7 +121,7 @@ class TestGetTaskStatus:
                         "score": 0.9
                     }
                 ],
-                "formatted_output": "
+                "formatted_output": "",
                 "token_estimate": 150
             }
             mock_async_result.return_value = mock_result

@@ -262,7 +262,7 @@ class TestScraperEdgeCases:
     @pytest.mark.asyncio
     async def test_special_characters_in_query(self, scraper):
         """Test scraper with special characters"""
-        query = "python @
+        query = "python @"
         
         with patch.object(scraper, '_fetch_tavily', new_callable=AsyncMock) as mock_tavily:
             mock_tavily.return_value = {"results": []}

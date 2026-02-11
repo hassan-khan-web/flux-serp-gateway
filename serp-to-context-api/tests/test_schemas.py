@@ -130,13 +130,13 @@ class TestSearchResponseSchema:
         """Test creating SearchResponse with required fields"""
         response = SearchResponse(
             query="test",
-            formatted_output="
+            formatted_output="",
             token_estimate=100,
             cached=False
         )
         
         assert response.query == "test"
-        assert response.formatted_output == "
+        assert response.formatted_output == ""
         assert response.token_estimate == 100
         assert response.cached is False
         assert response.ai_overview is None
@@ -163,7 +163,7 @@ class TestSearchResponseSchema:
             query="python programming",
             ai_overview="Python is a versatile language",
             organic_results=results,
-            formatted_output="
+            formatted_output="",
             token_estimate=250,
             cached=True
         )

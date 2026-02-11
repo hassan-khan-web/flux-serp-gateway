@@ -84,7 +84,7 @@ class TestFormatterService:
     def test_format_response_special_characters(self, formatter):
         """Test formatting with special characters"""
         parsed_data = {
-            "ai_overview": "Test with special chars: @
+            "ai_overview": "Test with special chars: @",
             "organic_results": [
                 {
                     "title": "Result with © symbol",
@@ -142,7 +142,7 @@ class TestFormatterService:
             "organic_results": [
                 {
                     "title": "Result",
-                    "url": "https://example.com/path?query=value&other=123
+                    "url": "https://example.com/path?query=value&other=123",
                     "snippet": "Snippet"
                 }
             ]
