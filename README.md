@@ -163,12 +163,19 @@ npm run dev
 
 ---
 
-## Docker Support
+## 🚀 Deployment
 
-For a production-like environment with all services wired together:
+The project uses GitHub Actions for Continuous Integration and Deployment.
 
+### Automated Pipeline
+On every push to `main`:
+1.  **Test**: Runs `pytest`, `mypy`, `bandit`, and `flake8`.
+2.  **Deploy**: If tests pass, builds Docker images for the API and Frontend and pushes them to GitHub Container Registry (GHCR).
+
+### Manual Deployment
+To deploy manually using Docker Compose:
 ```bash
-docker compose up --build
+docker compose up --build -d
 ```
 
 ## Service Access Points
