@@ -3,7 +3,7 @@ import os
 import asyncio
 from unittest.mock import patch, MagicMock, AsyncMock
 from testcontainers.postgres import PostgresContainer
-from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
+from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
 from sqlalchemy.future import select
 from app.db.models import SearchResult, Base
 from app.worker import scrape_and_process
@@ -78,7 +78,7 @@ async def test_full_flow_with_db(db_url):
         
         test_engine = create_async_engine(db_url, echo=True)
         database.engine = test_engine
-        database.AsyncSessionLocal = database.sessionmaker(
+        database.AsyncSessionLocal = async_sessionmaker(
             test_engine, class_=database.AsyncSession, expire_on_commit=False
         )
 
@@ -118,7 +118,7 @@ def test_integration_sync_wrapper(db_url):
     from app.db import database
     test_engine = create_async_engine(db_url, echo=False)
     database.engine = test_engine
-    database.AsyncSessionLocal = database.sessionmaker(
+    database.AsyncSessionLocal = async_sessionmaker(
         test_engine, class_=AsyncSession, expire_on_commit=False
     )
     
