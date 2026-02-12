@@ -1,4 +1,5 @@
 import pytest
+from typing import Dict, Any
 from app.services.formatter import FormatterService
 
 
@@ -11,7 +12,7 @@ class TestFormatterService:
 
     def test_format_response_basic(self, formatter):
         """Test basic response formatting"""
-        parsed_data = {
+        parsed_data: Dict[str, Any] = {
             "ai_overview": "Python is a programming language",
             "organic_results": [
                 {
@@ -32,7 +33,7 @@ class TestFormatterService:
 
     def test_format_response_empty_results(self, formatter):
         """Test formatting with no results"""
-        parsed_data = {
+        parsed_data: Dict[str, Any] = {
             "ai_overview": None,
             "organic_results": []
         }
@@ -45,7 +46,7 @@ class TestFormatterService:
 
     def test_format_response_multiple_results(self, formatter):
         """Test formatting with multiple results"""
-        parsed_data = {
+        parsed_data: Dict[str, Any] = {
             "ai_overview": "Overview text",
             "organic_results": [
                 {
@@ -64,7 +65,7 @@ class TestFormatterService:
 
     def test_format_response_with_embeddings(self, formatter):
         """Test formatting preserves embedding vectors"""
-        parsed_data = {
+        parsed_data: Dict[str, Any] = {
             "ai_overview": "Overview",
             "organic_results": [
                 {
@@ -83,7 +84,7 @@ class TestFormatterService:
 
     def test_format_response_special_characters(self, formatter):
         """Test formatting with special characters"""
-        parsed_data = {
+        parsed_data: Dict[str, Any] = {
             "ai_overview": "Test with special chars: @",
             "organic_results": [
                 {
@@ -102,7 +103,7 @@ class TestFormatterService:
     def test_format_response_long_content(self, formatter):
         """Test formatting with very long content"""
         long_overview = "A" * 5000
-        parsed_data = {
+        parsed_data: Dict[str, Any] = {
             "ai_overview": long_overview,
             "organic_results": [
                 {
@@ -119,7 +120,7 @@ class TestFormatterService:
 
     def test_format_response_unicode_content(self, formatter):
         """Test formatting with unicode characters"""
-        parsed_data = {
+        parsed_data: Dict[str, Any] = {
             "ai_overview": "Unicode test: 你好世界 مرحبا العالم",
             "organic_results": [
                 {
@@ -137,7 +138,7 @@ class TestFormatterService:
 
     def test_format_response_with_urls(self, formatter):
         """Test formatting with various URL formats"""
-        parsed_data = {
+        parsed_data: Dict[str, Any] = {
             "ai_overview": "Overview",
             "organic_results": [
                 {
@@ -175,7 +176,7 @@ class TestFormatterService:
 
     def test_format_response_token_estimate(self, formatter):
         """Test that token_estimate is calculated"""
-        parsed_data = {
+        parsed_data: Dict[str, Any] = {
             "ai_overview": "Overview with some tokens for estimation",
             "organic_results": [
                 {
@@ -193,7 +194,7 @@ class TestFormatterService:
 
     def test_format_response_none_overview(self, formatter):
         """Test formatting with None ai_overview"""
-        parsed_data = {
+        parsed_data: Dict[str, Any] = {
             "ai_overview": None,
             "organic_results": [
                 {
@@ -210,7 +211,7 @@ class TestFormatterService:
 
     def test_format_response_deduplication(self, formatter):
         """Test deduplication of similar results"""
-        parsed_data = {
+        parsed_data: Dict[str, Any] = {
             "ai_overview": "Overview",
             "organic_results": [
                 {
@@ -232,7 +233,7 @@ class TestFormatterService:
 
     def test_format_response_markdown_generation(self, formatter):
         """Test markdown output generation"""
-        parsed_data = {
+        parsed_data: Dict[str, Any] = {
             "ai_overview": "Test overview",
             "organic_results": [
                 {

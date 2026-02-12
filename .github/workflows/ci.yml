@@ -65,14 +65,14 @@ jobs:
 
     - name: Type Check with mypy
       run: |
-        mypy serp-to-context-api/app --config-file=mypy.ini --ignore-missing-imports --json > mypy-report.json || true
-        mypy serp-to-context-api/app --config-file=mypy.ini --ignore-missing-imports
+        mypy serp-to-context-api/app serp-to-context-api/tests --config-file=mypy.ini --ignore-missing-imports --json > mypy-report.json || true
+        mypy serp-to-context-api/app serp-to-context-api/tests --config-file=mypy.ini --ignore-missing-imports
       continue-on-error: true
 
     - name: Code Quality with pylint
       run: |
-        pylint serp-to-context-api/app --rcfile=.pylintrc --exit-zero --output-format=json > pylint-report.json || true
-        pylint serp-to-context-api/app --rcfile=.pylintrc --exit-zero
+        pylint serp-to-context-api/app serp-to-context-api/tests --rcfile=.pylintrc --exit-zero --output-format=json > pylint-report.json || true
+        pylint serp-to-context-api/app serp-to-context-api/tests --rcfile=.pylintrc --exit-zero
       continue-on-error: true
 
     - name: Run Tests with Coverage

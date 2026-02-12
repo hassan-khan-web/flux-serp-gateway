@@ -8,28 +8,7 @@ from sqlalchemy.future import select
 from app.db.models import SearchResult, Base
 from app.worker import scrape_and_process
 
-@pytest.fixture(scope="module")
-def db_url():
-    """
-    Get DB URL for testing.
-    If TEST_DATABASE_URL is set (e.g. in CI), use that.
-    Otherwise, try to spin up a Postgres container.
-    """
-    if os.getenv("TEST_DATABASE_URL"):
-        return os.getenv("TEST_DATABASE_URL")
 
-    try:
-        from testcontainers.postgres import PostgresContainer
-        container = PostgresContainer("pgvector/pgvector:pg16", driver="asyncpg")
-        container.with_env("POSTGRES_USER", "test_user")
-        container.with_env("POSTGRES_PASSWORD", "test_pass")
-        container.with_env("POSTGRES_DB", "test_db")
-        container.start()
-        return container.get_connection_url(driver="asyncpg")
-    except ImportError:
-        pytest.skip("testcontainers not installed")
-    except Exception as e:
-        pytest.skip(f"Docker not available or Testcontainers failed: {e}")
 
 
 @pytest.fixture(scope="module")
@@ -94,7 +73,7 @@ async def test_full_flow_with_db(db_url):
         }
         
         with patch("app.services.scraper.scraper.fetch_results", new_callable=MagicMock) as mock_fetch:
-            f = asyncio.Future()
+            f: asyncio.Future = asyncio.Future()
             f.set_result(mock_content)
             mock_fetch.return_value = f
 
