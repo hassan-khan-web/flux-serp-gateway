@@ -13,12 +13,23 @@ from app.db.repository import save_search_results
 from app.utils.logger import logger
 
 
+POSTGRES_USER = os.getenv("POSTGRES_USER", "user")
+POSTGRES_PASSWORD = os.getenv("POSTGRES_PASSWORD", "password")
+POSTGRES_DB = os.getenv("POSTGRES_DB", "flux_db")
+POSTGRES_HOST = os.getenv("POSTGRES_HOST", "db")
+POSTGRES_PORT = os.getenv("POSTGRES_PORT", "5432")
+
+# Construct the SQLAlchemy connection string
+# Format: db+postgresql://user:password@host:port/dbname
+DATABASE_URL = f"db+postgresql://{POSTGRES_USER}:{POSTGRES_PASSWORD}@{POSTGRES_HOST}:{POSTGRES_PORT}/{POSTGRES_DB}"
+
+# Fallback to Redis for Broker only
 REDIS_URL: str = os.getenv("REDIS_URL", "redis://localhost:6379/0")
 
 celery_app: Celery = Celery(
     "flux_worker",
     broker=REDIS_URL,
-    backend=REDIS_URL
+    backend=DATABASE_URL
 )
 
 celery_app.conf.update(
@@ -27,6 +38,12 @@ celery_app.conf.update(
     result_serializer="json",
     timezone="UTC",
     enable_utc=True,
+    # SQLAlchemy Result Backend Settings
+    database_engine_options={
+        'echo': False,  # Set to True for debugging SQL queries
+    },
+    task_track_started=True,  # Track when the task starts
+    task_ignore_result=False, # Ensure we store results
 )
 
 @celery_app.task(bind=True, name="app.worker.scrape_and_process")

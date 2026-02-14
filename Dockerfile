@@ -2,14 +2,17 @@ FROM python:3.10-slim
 
 WORKDIR /app
 
-COPY requirements.txt .
+# Install system dependencies if needed (e.g. for building wheels)
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    && rm -rf /var/lib/apt/lists/*
 
+COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY serp-to-context-api/ ./serp-to-context-api/
+COPY . .
 
-ENV PYTHONPATH=/app/serp-to-context-api
-
-EXPOSE 8000
+# Environment variables
+ENV PYTHONPATH=/app
 
 CMD ["uvicorn", "serp-to-context-api.main:app", "--host", "0.0.0.0", "--port", "8000"]
