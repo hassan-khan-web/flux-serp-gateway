@@ -43,7 +43,7 @@ class TestSearchRequestSchema:
     def test_search_request_missing_query(self):
         """Test validation error when query is missing"""
         with pytest.raises(ValidationError) as exc_info:
-            SearchRequest()
+            SearchRequest()  # type: ignore
         
         errors = exc_info.value.errors()
         assert any(error["loc"] == ("query",) for error in errors)
@@ -51,7 +51,7 @@ class TestSearchRequestSchema:
     def test_search_request_query_not_string(self):
         """Test validation error when query is not string"""
         with pytest.raises(ValidationError) as exc_info:
-            SearchRequest(query=123)
+            SearchRequest(query=123)  # type: ignore
         
         errors = exc_info.value.errors()
         assert any(error["loc"] == ("query",) for error in errors)
@@ -100,17 +100,17 @@ class TestOrganicResultSchema:
     def test_organic_result_missing_title(self):
         """Test validation error when title missing"""
         with pytest.raises(ValidationError):
-            OrganicResult(url="https://example.com", snippet="test")
+            OrganicResult(url="https://example.com", snippet="test")  # type: ignore
 
     def test_organic_result_missing_url(self):
         """Test validation error when url missing"""
         with pytest.raises(ValidationError):
-            OrganicResult(title="Title", snippet="test")
+            OrganicResult(title="Title", snippet="test")  # type: ignore
 
     def test_organic_result_missing_snippet(self):
         """Test validation error when snippet missing"""
         with pytest.raises(ValidationError):
-            OrganicResult(title="Title", url="https://example.com")
+            OrganicResult(title="Title", url="https://example.com")  # type: ignore
 
     def test_organic_result_score_bounds(self):
         """Test that score outside 0-1 range is accepted"""
@@ -180,7 +180,7 @@ class TestSearchResponseSchema:
                 formatted_output="test",
                 token_estimate=100,
                 cached=False
-            )
+            )  # type: ignore
 
     def test_search_response_missing_formatted_output(self):
         """Test validation error when formatted_output missing"""
@@ -189,7 +189,7 @@ class TestSearchResponseSchema:
                 query="test",
                 token_estimate=100,
                 cached=False
-            )
+            )  # type: ignore
 
     def test_search_response_token_estimate_negative(self):
         """Test negative token_estimate is accepted"""
@@ -273,12 +273,12 @@ class TestTaskResponseSchema:
     def test_task_response_missing_task_id(self):
         """Test validation error when task_id missing"""
         with pytest.raises(ValidationError):
-            TaskResponse(status="pending")
+            TaskResponse(status="pending")  # type: ignore
 
     def test_task_response_missing_status(self):
         """Test validation error when status missing"""
         with pytest.raises(ValidationError):
-            TaskResponse(task_id="task-123")
+            TaskResponse(task_id="task-123")  # type: ignore
 
     def test_task_response_all_fields(self):
         """Test TaskResponse with result and error (edge case)"""

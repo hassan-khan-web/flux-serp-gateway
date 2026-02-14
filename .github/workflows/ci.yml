@@ -65,7 +65,7 @@ jobs:
 
     - name: Type Check with mypy
       run: |
-        mypy serp-to-context-api/app serp-to-context-api/tests --config-file=mypy.ini --ignore-missing-imports --json > mypy-report.json || true
+        mypy serp-to-context-api/app serp-to-context-api/tests --config-file=mypy.ini --ignore-missing-imports > mypy-report.txt || true
         mypy serp-to-context-api/app serp-to-context-api/tests --config-file=mypy.ini --ignore-missing-imports
       continue-on-error: true
 
