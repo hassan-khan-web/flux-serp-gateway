@@ -22,7 +22,7 @@ services:
       - .env
     environment:
       - REDIS_URL=redis://redis:6379/0
-      - PYTHONPATH=/app
+      - PYTHONPATH=/app/serp-to-context-api
     depends_on:
       - redis
       - db
@@ -40,7 +40,7 @@ services:
       - .env
     environment:
       - REDIS_URL=redis://redis:6379/0
-      - PYTHONPATH=/app
+      - PYTHONPATH=/app/serp-to-context-api
     depends_on:
       - redis
       - db
