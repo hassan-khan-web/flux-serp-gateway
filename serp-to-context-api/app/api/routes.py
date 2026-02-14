@@ -1,5 +1,6 @@
 from typing import Any
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends
+from fastapi_limiter.depends import RateLimiter
 from celery.result import AsyncResult
 from celery import chain
 from app.api.schemas import SearchRequest, SearchResponse, TaskResponse
@@ -8,7 +9,7 @@ from app.utils.logger import logger
 
 router: APIRouter = APIRouter()
 
-@router.post("/search", response_model=TaskResponse, status_code=202)
+@router.post("/search", response_model=TaskResponse, status_code=202, dependencies=[Depends(RateLimiter(times=5, seconds=60))])
 async def search_endpoint(request: SearchRequest) -> TaskResponse:
     try:
         # Chain the tasks: Scrape -> Embed

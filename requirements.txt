@@ -13,6 +13,7 @@ sentence-transformers
 celery
 redis
 prometheus-fastapi-instrumentator
+fastapi-limiter==0.1.6
 prometheus-client
 sqlalchemy
 psycopg2-binary
