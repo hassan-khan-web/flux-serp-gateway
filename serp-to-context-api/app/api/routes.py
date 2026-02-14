@@ -1,8 +1,9 @@
 from typing import Any
 from fastapi import APIRouter, HTTPException
 from celery.result import AsyncResult
+from celery import chain
 from app.api.schemas import SearchRequest, SearchResponse, TaskResponse
-from app.worker import scrape_and_process
+from app.worker import scrape_task, embed_task
 from app.utils.logger import logger
 
 router: APIRouter = APIRouter()
@@ -10,14 +11,24 @@ router: APIRouter = APIRouter()
 @router.post("/search", response_model=TaskResponse, status_code=202)
 async def search_endpoint(request: SearchRequest) -> TaskResponse:
     try:
-        task = scrape_and_process.delay(
-            query=request.query,
-            region=request.region,
-            language=request.language,
-            limit=request.limit,
-            mode=request.mode,
-            output_format=request.output_format
+        # Chain the tasks: Scrape -> Embed
+        task_chain = chain(
+            scrape_task.s(
+                query=request.query,
+                region=request.region,
+                language=request.language,
+                limit=request.limit,
+                mode=request.mode
+            ),
+            embed_task.s(
+                region=request.region,
+                language=request.language,
+                limit=request.limit,
+                output_format=request.output_format
+            )
         )
+        
+        task = task_chain.apply_async()
         
         return TaskResponse(
             task_id=task.id,

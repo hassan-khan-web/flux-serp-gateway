@@ -33,9 +33,26 @@ services:
     networks:
       - app-network
 
-  worker:
+  worker-io:
     build: .
-    command: celery -A serp-to-context-api.app.worker.celery_app worker --loglevel=info --concurrency=2
+    command: celery -A app.worker.celery_app worker --loglevel=info -Q scrapers --concurrency=10
+    env_file:
+      - .env
+    environment:
+      - REDIS_URL=redis://redis:6379/0
+      - PYTHONPATH=/app/serp-to-context-api
+    depends_on:
+      - redis
+      - db
+    volumes:
+      - ./serp-to-context-api:/app/serp-to-context-api
+      - ./.env:/app/.env
+    networks:
+      - app-network
+
+  worker-cpu:
+    build: .
+    command: celery -A app.worker.celery_app worker --loglevel=info -Q embeddings --concurrency=2
     env_file:
       - .env
     environment:
