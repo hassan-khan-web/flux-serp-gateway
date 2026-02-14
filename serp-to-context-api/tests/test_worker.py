@@ -1,6 +1,6 @@
 import pytest
 from unittest.mock import MagicMock, patch, AsyncMock
-from app.worker import scrape_and_process
+from app.worker import scrape_task, embed_task
 
 
 class TestWorkerTask:
@@ -14,11 +14,11 @@ class TestWorkerTask:
     @patch("app.worker.cache")
     @patch("app.worker.init_db")
     @patch("app.worker.AsyncSessionLocal")
-    def test_scrape_and_process_search_mode(
-        self, mock_session, mock_init, mock_cache, mock_save, 
-        mock_embeddings, mock_formatter, mock_parser, mock_scraper
+
+    def test_scrape_task_search_mode(
+        self, mock_cache, mock_save, mock_embeddings, mock_formatter, mock_parser, mock_scraper
     ):
-        """Test scrape_and_process in search mode"""
+        """Test scrape_task in search mode"""
         mock_cache.get.return_value = None
         
         mock_scraper.fetch_results = AsyncMock(return_value=[
@@ -43,7 +43,7 @@ class TestWorkerTask:
         mock_init_db = AsyncMock()
         mock_init.side_effect = lambda: mock_init_db()
         
-        result = scrape_and_process("python", "us", "en", 10, "search", "json")
+        result = scrape_task.apply(args=["python", "us", "en", 10, "search"]).get()
         
         assert result is not None
         assert "organic_results" in result
@@ -57,11 +57,11 @@ class TestWorkerTask:
     @patch("app.worker.cache")
     @patch("app.worker.init_db")
     @patch("app.worker.AsyncSessionLocal")
-    def test_scrape_and_process_scrape_mode(
-        self, mock_session, mock_init, mock_cache, mock_save,
-        mock_embeddings, mock_formatter, mock_parser, mock_scraper
+
+    def test_scrape_task_scrape_mode(
+        self, mock_cache, mock_save, mock_embeddings, mock_formatter, mock_parser, mock_scraper
     ):
-        """Test scrape_and_process in scrape mode"""
+        """Test scrape_task in scrape mode"""
         mock_cache.get.return_value = None
         
         mock_scraper.scrape_url = AsyncMock(return_value="<html>content</html>")
@@ -84,7 +84,7 @@ class TestWorkerTask:
         mock_init_db = AsyncMock()
         mock_init.side_effect = lambda: mock_init_db()
         
-        result = scrape_and_process("https://example.com", "us", "en", 10, "scrape", "json")
+        result = scrape_task.apply(args=["https://example.com", "us", "en", 10, "scrape"]).get()
         
         assert result is not None
         assert "organic_results" in result
@@ -94,14 +94,14 @@ class TestWorkerTask:
     @patch("app.worker.formatter")
     @patch("app.worker.embeddings_service")
     @patch("app.worker.cache")
-    def test_scrape_and_process_cached_result(
+    def test_scrape_task_cached_result(
         self, mock_cache, mock_embeddings, mock_formatter, mock_parser, mock_scraper
     ):
-        """Test scrape_and_process returns cached result"""
+        """Test scrape_task returns cached result"""
         cached_result = {"query": "python", "cached": True}
         mock_cache.get.return_value = cached_result
         
-        result = scrape_and_process("python", "us", "en", 10, "search", "json")
+        result = scrape_task.apply(args=["python", "us", "en", 10, "search"]).get()
         
         assert result == cached_result
         mock_scraper.fetch_results.assert_not_called()
@@ -114,28 +114,16 @@ class TestWorkerTask:
     @patch("app.worker.cache")
     @patch("app.worker.init_db")
     @patch("app.worker.AsyncSessionLocal")
-    def test_scrape_and_process_with_vectors(
+
+    def test_embed_task_with_vectors(
         self, mock_session, mock_init, mock_cache, mock_save,
         mock_embeddings, mock_formatter, mock_parser, mock_scraper
     ):
-        """Test scrape_and_process with vector output"""
-        mock_cache.get.return_value = None
-        
-        mock_scraper.fetch_results = AsyncMock(return_value=[
-            {"title": "Result", "snippet": "Snippet text"}
-        ])
-        
-        mock_parser.parse.return_value = {
-            "ai_overview": "Overview",
-            "organic_results": [{"title": "Result", "snippet": "Snippet text"}]
-        }
-        
-        mock_formatter.format_response.return_value = {
-            "query": "test",
-            "ai_overview": "Overview",
-            "organic_results": [{"title": "Result", "snippet": "Snippet text"}],
-            "formatted_output": "Formatted",
-            "token_estimate": 100
+        """Test embed_task with vector output"""
+        # Input result from step 1
+        input_result = {
+             "query": "test",
+             "organic_results": [{"title": "Result", "snippet": "Snippet text"}]
         }
         
         mock_embeddings.generate.return_value = [[0.1, 0.2, 0.3, 0.4, 0.5]]
@@ -143,7 +131,7 @@ class TestWorkerTask:
         mock_init_db = AsyncMock()
         mock_init.side_effect = lambda: mock_init_db()
         
-        result = scrape_and_process("test", "us", "en", 10, "search", "vector")
+        result = embed_task.apply(args=[input_result, "us", "en", 10, "vector"]).get()
         
         assert result is not None
         assert result["organic_results"][0].get("embedding") is not None
@@ -156,14 +144,15 @@ class TestWorkerTask:
     @patch("app.worker.cache")
     @patch("app.worker.init_db")
     @patch("app.worker.AsyncSessionLocal")
-    def test_scrape_and_process_error_handling(
+
+    def test_scrape_task_error_handling(
         self, mock_session, mock_init, mock_cache, mock_save,
         mock_embeddings, mock_formatter, mock_parser, mock_scraper
     ):
-        """Test scrape_and_process error handling"""
+        """Test scrape_task error handling"""
         mock_cache.get.side_effect = Exception("Cache error")
         
-        result = scrape_and_process("test", "us", "en", 10, "search", "json")
+        result = scrape_task.apply(args=["test", "us", "en", 10, "search"]).get()
         
         assert "error" in result
 
@@ -172,14 +161,14 @@ class TestWorkerTask:
     @patch("app.worker.formatter")
     @patch("app.worker.embeddings_service")
     @patch("app.worker.cache")
-    def test_scrape_and_process_fetch_fails(
+    def test_scrape_task_fetch_fails(
         self, mock_cache, mock_embeddings, mock_formatter, mock_parser, mock_scraper
     ):
-        """Test scrape_and_process when fetch returns None"""
+        """Test scrape_task when fetch returns None"""
         mock_cache.get.return_value = None
         mock_scraper.fetch_results = AsyncMock(return_value=None)
         
-        result = scrape_and_process("test", "us", "en", 10, "search", "json")
+        result = scrape_task.apply(args=["test", "us", "en", 10, "search"]).get()
         
         assert result is not None
         assert "error" in result
@@ -192,34 +181,21 @@ class TestWorkerTask:
     @patch("app.worker.cache")
     @patch("app.worker.init_db")
     @patch("app.worker.AsyncSessionLocal")
-    def test_scrape_and_process_database_error_logged(
+
+    def test_embed_task_database_error_logged(
         self, mock_session, mock_init, mock_cache, mock_save,
         mock_embeddings, mock_formatter, mock_parser, mock_scraper
     ):
-        """Test scrape_and_process logs database errors"""
-        mock_cache.get.return_value = None
-        
-        mock_scraper.fetch_results = AsyncMock(return_value=[
-            {"title": "Result"}
-        ])
-        
-        mock_parser.parse.return_value = {
-            "ai_overview": "Overview",
-            "organic_results": [{"title": "Result"}]
-        }
-        
-        mock_formatter.format_response.return_value = {
-            "query": "test",
-            "ai_overview": "Overview",
-            "organic_results": [{"title": "Result"}],
-            "formatted_output": "Formatted",
-            "token_estimate": 100
+        """Test embed_task logs database errors"""
+        input_result = {
+             "query": "test",
+             "organic_results": [{"title": "Result", "snippet": "Snippet text"}]
         }
         
         mock_init_db = AsyncMock(side_effect=Exception("DB init error"))
         mock_init.side_effect = lambda: mock_init_db()
         
-        result = scrape_and_process("test", "us", "en", 10, "search", "json")
+        result = embed_task.apply(args=[input_result, "us", "en", 10, "json"]).get()
         
         assert result is not None
         assert "organic_results" in result

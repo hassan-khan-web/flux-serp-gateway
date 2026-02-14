@@ -6,7 +6,7 @@ from testcontainers.postgres import PostgresContainer
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
 from sqlalchemy.future import select
 from app.db.models import SearchResult, Base
-from app.worker import scrape_and_process
+from app.worker import scrape_task, embed_task
 
 
 
@@ -113,14 +113,7 @@ def test_integration_sync_wrapper(db_url):
             "answer": "AI Answer"
         }
         
-        result = scrape_and_process(
-            query="test query",
-            region="us",
-            language="en",
-            limit=1,
-            mode="search",
-            output_format="json"
-        )
+        result = scrape_task.apply(args=["test query", "us", "en", 1, "search"]).get()
         
         assert result["query"] == "test query"
         assert len(result["organic_results"]) > 0

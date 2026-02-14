@@ -116,7 +116,7 @@ class TestWorkerEventLoopGaps:
         mock_formatter, mock_parser, mock_scraper
     ):
         """Test worker creates new event loop on RuntimeError"""
-        from app.worker import scrape_and_process
+        from app.worker import scrape_task
         
         mock_get_loop.side_effect = RuntimeError("No running event loop")
         
@@ -129,7 +129,7 @@ class TestWorkerEventLoopGaps:
         }
         mock_embeddings.generate.return_value = []
         
-        result = scrape_and_process("test", "us", "en", 10, "search", "json")
+        result = scrape_task.apply(args=["test", "us", "en", 10, "search"]).get()
         
         assert result is not None
 
