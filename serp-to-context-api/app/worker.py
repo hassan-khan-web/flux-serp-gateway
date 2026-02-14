@@ -44,6 +44,11 @@ celery_app.conf.update(
     },
     task_track_started=True,  # Track when the task starts
     task_ignore_result=False, # Ensure we store results
+    
+    # Robustness Settings
+    task_acks_late=True,             # Only ack after task succeeds/fails
+    worker_prefetch_multiplier=1,    # Only take 1 task at a time per worker process
+    task_reject_on_worker_lost=True, # Re-queue task if worker crashes
 )
 
 @celery_app.task(bind=True, name="app.worker.scrape_and_process")
