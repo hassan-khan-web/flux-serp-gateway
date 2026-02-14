@@ -1,6 +1,7 @@
 import pytest
 from unittest.mock import MagicMock, patch, AsyncMock
 from app.worker import scrape_task, embed_task
+from app.worker import celery_app
 
 
 class TestWorkerTask:
@@ -16,7 +17,7 @@ class TestWorkerTask:
     @patch("app.worker.AsyncSessionLocal")
 
     def test_scrape_task_search_mode(
-        self, mock_cache, mock_save, mock_embeddings, mock_formatter, mock_parser, mock_scraper
+        self, mock_session, mock_init, mock_cache, mock_save, mock_embeddings, mock_formatter, mock_parser, mock_scraper
     ):
         """Test scrape_task in search mode"""
         mock_cache.get.return_value = None
@@ -59,7 +60,7 @@ class TestWorkerTask:
     @patch("app.worker.AsyncSessionLocal")
 
     def test_scrape_task_scrape_mode(
-        self, mock_cache, mock_save, mock_embeddings, mock_formatter, mock_parser, mock_scraper
+        self, mock_session, mock_init, mock_cache, mock_save, mock_embeddings, mock_formatter, mock_parser, mock_scraper
     ):
         """Test scrape_task in scrape mode"""
         mock_cache.get.return_value = None

@@ -1,8 +1,18 @@
 import pytest
 import os
 from pathlib import Path
+from app.worker import celery_app
 
 PROJECT_ROOT = Path(__file__).parent.parent
+
+@pytest.fixture(autouse=True)
+def setup_celery_test_mode():
+    celery_app.conf.update(
+        broker_url='memory://',
+        result_backend='cache+memory://',
+        task_always_eager=True,
+        task_eager_propagates=True
+    )
 
 @pytest.fixture
 def mock_html_content():

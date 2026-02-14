@@ -1,0 +1,37 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.9, pytest-8.0.0, pluggy-1.5.0
+rootdir: /home/mohammed/Flux
+plugins: mock-3.12.0, asyncio-0.23.5, cov-7.0.0, anyio-4.10.0
+asyncio: mode=Mode.STRICT
+collected 1 item
+
+serp-to-context-api/tests/test_worker.py F                               [100%]
+
+=================================== FAILURES ===================================
+_________________ TestWorkerTask.test_scrape_task_search_mode __________________
+
+args = (<test_worker.TestWorkerTask object at 0x7e44aa5c1810>,), keywargs = {}
+newargs = (<test_worker.TestWorkerTask object at 0x7e44aa5c1810>, <MagicMock name='AsyncSessionLocal' id='138828344720224'>, <As...Mock name='save_search_results' id='138828343231888'>, <MagicMock name='embeddings_service' id='138828343232560'>, ...)
+newkeywargs = {}
+
+    @wraps(func)
+    def patched(*args, **keywargs):
+        with self.decoration_helper(patched,
+                                    args,
+                                    keywargs) as (newargs, newkeywargs):
+>           return func(*newargs, **newkeywargs)
+E           TypeError: TestWorkerTask.test_scrape_task_search_mode() takes 7 positional arguments but 9 were given
+
+../anaconda3/lib/python3.13/unittest/mock.py:1426: TypeError
+=============================== warnings summary ===============================
+serp-to-context-api/app/utils/logger.py:10
+serp-to-context-api/app/utils/logger.py:10
+serp-to-context-api/app/utils/logger.py:10
+serp-to-context-api/app/utils/logger.py:10
+  /home/mohammed/Flux/serp-to-context-api/app/utils/logger.py:10: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    "timestamp": datetime.utcnow().isoformat(),
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED serp-to-context-api/tests/test_worker.py::TestWorkerTask::test_scrape_task_search_mode
+======================== 1 failed, 4 warnings in 13.78s ========================
