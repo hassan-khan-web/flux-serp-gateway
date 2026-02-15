@@ -299,8 +299,8 @@ async def main():
     print("\nStarting Evaluation Phase...")
     evaluated_results = []
     
-    # Process evaluation in batches
-    eval_batch_size = 5
+    # Process evaluation sequentially to strictly avoid rate limits
+    eval_batch_size = 1
     for i in range(0, len(results), eval_batch_size):
         batch = results[i:i + eval_batch_size]
         eval_tasks = []
@@ -363,7 +363,7 @@ async def main():
             
         print(f"Evaluated {min(i + eval_batch_size, len(results))}/{len(results)} queries...")
         if judge:
-            await asyncio.sleep(2) # Protect Rate Limits
+            await asyncio.sleep(10) # Protect Rate Limits (10s delay between queries)
 
     # Aggregation
     successes = [r for r in evaluated_results if r["status"] == "success"]
