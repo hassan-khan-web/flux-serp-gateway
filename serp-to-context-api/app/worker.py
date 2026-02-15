@@ -11,6 +11,7 @@ from app.utils.cache import cache
 from app.db.database import AsyncSessionLocal, init_db
 from app.db.repository import save_search_results
 from app.utils.logger import logger
+import httpx
 
 
 POSTGRES_USER = os.getenv("POSTGRES_USER", "user")
@@ -51,7 +52,14 @@ celery_app.conf.update(
     # task_reject_on_worker_lost=True, # Re-queue task if worker crashes
 )
 
-@celery_app.task(bind=True, name="app.worker.scrape_task", queue="scrapers")
+@celery_app.task(
+    bind=True, 
+    name="app.worker.scrape_task", 
+    queue="scrapers",
+    autoretry_for=(httpx.RequestError, httpx.TimeoutException, ConnectionError),
+    retry_backoff=True,
+    retry_kwargs={'max_retries': 3}
+)
 def scrape_task(
     self: Task,
     query: str,
@@ -65,53 +73,51 @@ def scrape_task(
     Scrapes URL/Search Engine, parses content, and formats basic result.
     """
     logger.info(f"Task msg received: app.worker.scrape_task query={query}")
+    
+    # Check cache first
+    logger.info(f"Checking cache for query={query}")
+    cached_data: Dict[str, Any] | None = cache.get(query, region, language, limit)
+    if cached_data:
+        logger.info("Cache hit!")
+        return cached_data
+
+    logger.info("Cache miss. Setting up event loop.")
     try:
-        # Check cache first
-        logger.info(f"Checking cache for query={query}")
-        cached_data: Dict[str, Any] | None = cache.get(query, region, language, limit)
-        if cached_data:
-            logger.info("Cache hit!")
-            return cached_data
+            loop = asyncio.get_event_loop()
+    except RuntimeError:
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
 
-        logger.info("Cache miss. Setting up event loop.")
-        try:
-             loop = asyncio.get_event_loop()
-        except RuntimeError:
-             loop = asyncio.new_event_loop()
-             asyncio.set_event_loop(loop)
+    content = None
+    parsed_data = None
 
-        content = None
-        parsed_data = None
-
-        if mode == "scrape":
-            content = loop.run_until_complete(scraper.scrape_url(query))
-            if not content:
-                 return {"error": "Failed to scrape URL"}
-            
-            parsed_data = parser.parse_url_content(content)
-            if parsed_data["organic_results"] and not parsed_data["organic_results"][0]["url"]:
-                parsed_data["organic_results"][0]["url"] = query
-        else:
-            content = loop.run_until_complete(scraper.fetch_results(query, region, language, limit))
-            if not content:
-                return {"error": "Failed to fetch search results"}
-            parsed_data = parser.parse(content)
-
-        formatted_data = formatter.format_response(query, parsed_data)
-
-        result = {
-            "query": query,
-            "ai_overview": formatted_data["ai_overview"],
-            "organic_results": formatted_data["organic_results"],
-            "formatted_output": formatted_data["formatted_output"],
-            "token_estimate": formatted_data["token_estimate"]
-        }
+    if mode == "scrape":
+        content = loop.run_until_complete(scraper.scrape_url(query))
+        if not content:
+                # Raise exception to trigger retry
+                raise httpx.RequestError(f"Failed to scrape URL: {query}")
         
-        return result
+        parsed_data = parser.parse_url_content(content)
+        if parsed_data["organic_results"] and not parsed_data["organic_results"][0]["url"]:
+            parsed_data["organic_results"][0]["url"] = query
+    else:
+        content = loop.run_until_complete(scraper.fetch_results(query, region, language, limit))
+        if not content:
+            # Raise exception to trigger retry
+            raise httpx.RequestError(f"Failed to fetch search results for query: {query}")
+        parsed_data = parser.parse(content)
 
-    except Exception as e:
-        logger.error(f"Scrape task failed: {e}")
-        return {"error": str(e)}
+    formatted_data = formatter.format_response(query, parsed_data)
+
+    result = {
+        "query": query,
+        "ai_overview": formatted_data["ai_overview"],
+        "organic_results": formatted_data["organic_results"],
+        "formatted_output": formatted_data["formatted_output"],
+        "token_estimate": formatted_data["token_estimate"]
+    }
+    
+    return result
 
 @celery_app.task(bind=True, name="app.worker.embed_task", queue="embeddings")
 def embed_task(

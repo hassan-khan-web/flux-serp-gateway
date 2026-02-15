@@ -62,7 +62,8 @@ class TestEmbeddingsService:
     def test_model_not_loaded_returns_empty(self):
         """Test that missing model returns empty list"""
         service = EmbeddingsService()
-        service.model = None
+        # Simulate model load failure (lazy loading sets it to False on failure)
+        service.model = False
         
         result = service.generate(["test"])
         
