@@ -16,7 +16,7 @@ DATASET_PATH = "backend/tests/evals/dataset.json"
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 
 class LLMJudge:
-    def __init__(self, api_key: str, model_name: str = "gemini-2.0-flash-exp"):
+    def __init__(self, api_key: str, model_name: str = "gemini-2.5-flash"):
         self.api_key = api_key
         self.model_name = model_name
         genai.configure(api_key=self.api_key)
@@ -32,7 +32,7 @@ class LLMJudge:
 
         prompt = f"""
         You are an expert search relevance judge. 
-        Your task is to evaluate how relevant the following search snippets are to the user's query.
+        Your task is to evaluate the OVERALL quality of the returned search snippets for the user's query.
 
         User Query: "{query}"
 
@@ -40,29 +40,52 @@ class LLMJudge:
         {json.dumps(snippets, indent=2)}
 
         Instructions:
-        1. Analyze if the snippets contain information that directly answers or helps answer the query.
-        2. Assign a relevance score between 0.0 (completely irrelevant) and 1.0 (perfect answer).
+        1. Analyze if the set of snippets contains information that directly answers the query.
+        2. Assign a SINGLE aggregate relevance score between 0.0 (completely irrelevant) and 1.0 (perfect answer).
         3. Provide a brief reasoning for your score.
-        4. Output ONLY valid JSON in the following format:
+        4. Output ONLY a SINGLE valid JSON object in the following format:
         {{
             "score": <float>,
             "reasoning": "<string>"
         }}
         """
 
-        try:
-            # Run in a separate thread to avoid blocking asyncio loop (genai is sync)
-            response = await asyncio.to_thread(
-                self.model.generate_content, 
-                prompt,
-                generation_config={"response_mime_type": "application/json"}
-            )
+        retries = 3
+        base_delay = 15  # Seconds (Free tier bucket refill)
+
+        for attempt in range(retries + 1):
+            try:
+                # Run in a separate thread to avoid blocking asyncio loop (genai is sync)
+                response = await asyncio.to_thread(
+                    self.model.generate_content, 
+                    prompt,
+                    generation_config={"response_mime_type": "application/json"}
+                )
+                
+                result = json.loads(response.text)
+                
+                # Handle list output (sometimes model returns [ { ... } ])
+                if isinstance(result, list):
+                    if len(result) > 0 and isinstance(result[0], dict):
+                        result = result[0]
+                    else:
+                        return {"score": 0.0, "reasoning": "Invalid list format from LLM"}
+                        
+                return result
             
-            result = json.loads(response.text)
-            return result
-        except Exception as e:
-            print(f"Error evaluating query '{query}': {e}")
-            return {"score": 0.0, "reasoning": f"Evaluation failed: {str(e)}"}
+            except Exception as e:
+                is_rate_limit = "429" in str(e) or "quota" in str(e).lower()
+                if is_rate_limit:
+                    if attempt < retries:
+                        wait_time = base_delay * (attempt + 1)
+                        print(f"Rate limit hit for '{query}'. Retrying in {wait_time}s...")
+                        await asyncio.sleep(wait_time)
+                        continue
+                    else:
+                        return {"score": 0.0, "reasoning": f"Rate limit exceeded after retries: {str(e)}"}
+                
+                print(f"Error evaluating query '{query}': {e}")
+                return {"score": 0.0, "reasoning": f"Evaluation failed: {str(e)}"}
 
 async def run_query(client: httpx.AsyncClient, question: Dict[str, Any]) -> Dict[str, Any]:
     start_time = time.time()
@@ -182,7 +205,7 @@ async def main():
     else:
         print(f"Initializing LLM Judge with model: gemini-2.5-flash...")
         try:
-            judge = LLMJudge(api_key=GEMINI_API_KEY, model_name="gemini-2.0-flash-exp")
+            judge = LLMJudge(api_key=GEMINI_API_KEY, model_name="gemini-2.5-flash")
         except Exception as e:
             print(f"Failed to initialize LLM Judge: {e}. Falling back to heuristic.")
             judge = None
@@ -190,7 +213,10 @@ async def main():
     print(f"Loading dataset from {DATASET_PATH}...")
     try:
         with open(DATASET_PATH, "r") as f:
-            dataset = json.load(f)
+            full_dataset = json.load(f)
+            # DEMO LIMIT: Process only first 10 items to stay within free tier limits quickly
+            dataset = full_dataset[:10] 
+            print(f"DEMO MODE: Processing 10/{len(full_dataset)} queries for rapid verification.")
     except FileNotFoundError:
         print(f"Error: Dataset not found at {DATASET_PATH}")
         return
