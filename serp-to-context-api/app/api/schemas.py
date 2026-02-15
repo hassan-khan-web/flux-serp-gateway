@@ -1,5 +1,5 @@
-from pydantic import BaseModel, Field
 from typing import Optional, List, Dict, Union, Any
+from pydantic import BaseModel, Field
 
 class SearchRequest(BaseModel):
     query: str

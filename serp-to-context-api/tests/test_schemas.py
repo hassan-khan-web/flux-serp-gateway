@@ -14,7 +14,7 @@ class TestSearchRequestSchema:
     def test_search_request_minimal(self):
         """Test creating SearchRequest with only required field"""
         request = SearchRequest(query="python")
-        
+
         assert request.query == "python"
         assert request.region == "us"
         assert request.language == "en"
@@ -32,7 +32,7 @@ class TestSearchRequestSchema:
             mode="scrape",
             limit=20
         )
-        
+
         assert request.query == "machine learning"
         assert request.region == "uk"
         assert request.language == "es"
@@ -44,7 +44,7 @@ class TestSearchRequestSchema:
         """Test validation error when query is missing"""
         with pytest.raises(ValidationError) as exc_info:
             SearchRequest()  # type: ignore
-        
+
         errors = exc_info.value.errors()
         assert any(error["loc"] == ("query",) for error in errors)
 
@@ -52,7 +52,7 @@ class TestSearchRequestSchema:
         """Test validation error when query is not string"""
         with pytest.raises(ValidationError) as exc_info:
             SearchRequest(query=123)  # type: ignore
-        
+
         errors = exc_info.value.errors()
         assert any(error["loc"] == ("query",) for error in errors)
 
@@ -77,7 +77,7 @@ class TestOrganicResultSchema:
             url="https://example.com",
             snippet="This is a snippet"
         )
-        
+
         assert result.title == "Example Title"
         assert result.url == "https://example.com"
         assert result.snippet == "This is a snippet"
@@ -93,7 +93,7 @@ class TestOrganicResultSchema:
             score=0.95,
             embedding=[0.1, 0.2, 0.3, 0.4, 0.5]
         )
-        
+
         assert result.score == 0.95
         assert result.embedding == [0.1, 0.2, 0.3, 0.4, 0.5]
 
@@ -134,7 +134,7 @@ class TestSearchResponseSchema:
             token_estimate=100,
             cached=False
         )
-        
+
         assert response.query == "test"
         assert response.formatted_output == ""
         assert response.token_estimate == 100
@@ -158,7 +158,7 @@ class TestSearchResponseSchema:
                 score=0.8
             )
         ]
-        
+
         response = SearchResponse(
             query="python programming",
             ai_overview="Python is a versatile language",
@@ -167,7 +167,7 @@ class TestSearchResponseSchema:
             token_estimate=250,
             cached=True
         )
-        
+
         assert response.query == "python programming"
         assert response.ai_overview == "Python is a versatile language"
         assert len(response.organic_results) == 2
@@ -212,7 +212,7 @@ class TestSearchResponseSchema:
             )
             for i in range(100)
         ]
-        
+
         response = SearchResponse(
             query="large test",
             organic_results=results,
@@ -220,7 +220,7 @@ class TestSearchResponseSchema:
             token_estimate=5000,
             cached=False
         )
-        
+
         assert len(response.organic_results) == 100
 
 
@@ -233,7 +233,7 @@ class TestTaskResponseSchema:
             task_id="task-123",
             status="pending"
         )
-        
+
         assert response.task_id == "task-123"
         assert response.status == "pending"
         assert response.result is None
@@ -247,13 +247,13 @@ class TestTaskResponseSchema:
             token_estimate=100,
             cached=False
         )
-        
+
         response = TaskResponse(
             task_id="task-456",
             status="completed",
             result=search_result
         )
-        
+
         assert response.status == "completed"
         assert response.result is not None
         assert response.result.query == "test"
@@ -265,7 +265,7 @@ class TestTaskResponseSchema:
             status="failed",
             error="Network timeout error"
         )
-        
+
         assert response.status == "failed"
         assert response.error == "Network timeout error"
         assert response.result is None
@@ -288,13 +288,13 @@ class TestTaskResponseSchema:
             token_estimate=100,
             cached=False
         )
-        
+
         response = TaskResponse(
             task_id="task-999",
             status="completed",
             result=search_result,
             error="Warning: partial results"
         )
-        
+
         assert response.result is not None
         assert response.error is not None

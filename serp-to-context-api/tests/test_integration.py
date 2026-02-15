@@ -34,10 +34,10 @@ def postgres_container():
 def db_url(postgres_container):
     if os.getenv("TEST_DATABASE_URL"):
         return os.getenv("TEST_DATABASE_URL")
-    
+
     if postgres_container:
         return postgres_container.get_connection_url(driver="asyncpg")
-    
+
     pytest.skip("No database available for integration test")
 
 
@@ -50,11 +50,11 @@ async def test_full_flow_with_db(db_url):
     3. Calls the worker task (scrape_and_process).
     4. Verifies data is saved to the Postgres DB.
     """
-    
+
     with patch.dict(os.environ, {"DATABASE_URL": db_url}):
-        
+
         from app.db import database
-        
+
         test_engine = create_async_engine(db_url, echo=True)
         database.engine = test_engine
         database.AsyncSessionLocal = async_sessionmaker(
@@ -71,19 +71,19 @@ async def test_full_flow_with_db(db_url):
             ],
             "answer": "AI Answer"
         }
-        
+
         with patch("app.services.scraper.scraper.fetch_results", new_callable=MagicMock) as mock_fetch:
             f: asyncio.Future = asyncio.Future()
             f.set_result(mock_content)
             mock_fetch.return_value = f
 
-            
-            
-            
-            
-            
-            
-            
+
+
+
+
+
+
+
             pass
 
 @pytest.mark.asyncio
@@ -100,7 +100,7 @@ def test_integration_sync_wrapper(db_url):
     database.AsyncSessionLocal = async_sessionmaker(
         test_engine, class_=AsyncSession, expire_on_commit=False
     )
-    
+
     with patch("app.services.scraper.scraper.fetch_results", new_callable=AsyncMock) as mock_fetch:
         mock_fetch.return_value = {
             "results": [
@@ -112,9 +112,9 @@ def test_integration_sync_wrapper(db_url):
             ],
             "answer": "AI Answer"
         }
-        
+
         result = scrape_task.apply(args=["test query", "us", "en", 1, "search"]).get()
-        
+
         assert result["query"] == "test query"
         assert len(result["organic_results"]) > 0
         assert result["organic_results"][0]["title"] == "Integration Title"

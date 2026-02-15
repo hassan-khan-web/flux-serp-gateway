@@ -25,13 +25,13 @@ class TestParserService:
         """Test parsing of a known minimal HTML structure."""
         parser = ParserService()
         result = parser.parse(minimal_html_content)
-        
+
         assert "organic_results" in result
         assert "ai_overview" in result
-        
+
         results = result["organic_results"]
         assert len(results) >= 1
-        
+
         first_result = results[0]
         assert first_result["title"] == "Test Result Title"
         assert first_result["url"] == "https://example.com/result"
@@ -45,6 +45,6 @@ class TestParserService:
         """
         parser = ParserService()
         result = parser.parse(mock_html_content)
-        
+
         assert isinstance(result, dict)
         assert "organic_results" in result

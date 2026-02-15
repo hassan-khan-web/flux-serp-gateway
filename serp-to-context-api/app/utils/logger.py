@@ -24,10 +24,10 @@ def setup_logger():
 
     handler = logging.StreamHandler(sys.stdout)
     handler.setFormatter(JsonFormatter())
-    
+
     if not logger.handlers:
         logger.addHandler(handler)
-    
+
     return logger
 
 logger = setup_logger()

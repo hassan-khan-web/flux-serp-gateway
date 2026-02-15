@@ -28,23 +28,23 @@ async def search_endpoint(request: SearchRequest) -> TaskResponse:
                 output_format=request.output_format
             )
         )
-        
+
         task = task_chain.apply_async()
-        
+
         return TaskResponse(
             task_id=task.id,
             status="pending"
         )
 
     except Exception as e:
-        logger.error(f"Search endpoint error: {e}")
-        raise HTTPException(status_code=500, detail="Internal Server Error")
+        logger.error("Search endpoint error: %s", e)
+        raise HTTPException(status_code=500, detail="Internal Server Error") from e
 
 @router.get("/tasks/{task_id}", response_model=TaskResponse)
 async def get_task_status(task_id: str) -> TaskResponse:
     try:
         task_result = AsyncResult(task_id)
-        
+
         response = TaskResponse(
             task_id=task_id,
             status=task_result.status.lower()
@@ -62,9 +62,9 @@ async def get_task_status(task_id: str) -> TaskResponse:
             else:
                 response.status = "failed"
                 response.error = str(task_result.result)
-        
+
         return response
 
     except Exception as e:
-        logger.error(f"Task status error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error("Task status error: %s", e)
+        raise HTTPException(status_code=500, detail=str(e)) from e

@@ -1,11 +1,12 @@
-import httpx
 import os
 import random
+import time
 import urllib.parse
-from typing import Optional, Union, Dict, Any
+from typing import Any, Dict, Optional, Union
+
+import httpx
 from app.utils.logger import logger
 from prometheus_client import Counter, Histogram
-import time
 
 
 
@@ -61,7 +62,7 @@ class ScraperService:
                         result = data["results"][0]
                         if isinstance(result, dict):
                             return result
-                
+
                 SCRAPE_REQUESTS.labels(provider="tavily_extract", status="error").inc()
                 logger.warning(f"Tavily Extract failed with status {response.status_code}: {response.text}")
         except Exception as e:
@@ -93,12 +94,12 @@ class ScraperService:
                     data = response.json()
                     if isinstance(data, dict):
                         return data
-                
+
                 SCRAPE_REQUESTS.labels(provider="tavily_search", status="error").inc()
                 logger.warning(f"Tavily failed with status {response.status_code}: {response.text}")
-        except Exception as e:
+        except httpx.RequestError as e:
             SCRAPE_REQUESTS.labels(provider="tavily_search", status="exception").inc()
-            logger.error(f"Tavily error: {e}")
+            logger.error("Tavily error: %s", e)
         return None
 
     async def scrape_url(self, url: str) -> Optional[Union[str, Dict]]:
@@ -109,37 +110,37 @@ class ScraperService:
         html = None
         if self.scrapingbee_key:
             html = await self._fetch_scrapingbee(url)
-        
+
         if not html and self.zenrows_key:
             html = await self._fetch_zenrows(url)
-            
+
         if not html:
             html = await self._fetch_direct(url)
-            
+
         return html
 
     async def fetch_results(self, query: str, region: str = "us", language: str = "en", limit: int = 10) -> Optional[Union[str, Dict]]:
         params = {"q": query, "gl": region, "hl": language, "num": limit}
         search_url = f"https://www.google.com/search?{urllib.parse.urlencode(params)}"
-        
+
         if self.tavily_key:
             data = await self._fetch_tavily(query, limit)
             if data: return data
 
         html = None
-        
+
         debug_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "debug.html")
-        
+
         if self.scrapingbee_key:
             html = await self._fetch_scrapingbee(search_url)
             if html and self._is_valid_html(html): return html
-            
+
         if self.zenrows_key:
             html = await self._fetch_zenrows(search_url)
             if html and self._is_valid_html(html): return html
-            
+
         res = await self._fetch_direct(search_url)
-        
+
         final_html = html if html else res
         if final_html:
             try:
@@ -147,8 +148,8 @@ class ScraperService:
                     f.write(final_html)
                 logger.info(f"Saved debug HTML to {debug_path}")
             except Exception as e:
-                logger.error(f"Failed to save debug HTML: {e}")
-                
+                logger.error("Failed to save debug HTML: %s", e)
+
         return final_html
 
     async def _fetch_scrapingbee(self, url: str) -> Optional[str]:
@@ -160,7 +161,7 @@ class ScraperService:
                     "https://app.scrapingbee.com/api/v1/",
                     params={
                         "api_key": self.scrapingbee_key,
-                        "url": url, 
+                        "url": url,
                         "render_js": "true",
                         "premium_proxy": "true",
                         "stealth_proxy": "true",
@@ -175,12 +176,12 @@ class ScraperService:
                 if response.status_code == 200:
                     SCRAPE_REQUESTS.labels(provider="scrapingbee", status="success").inc()
                     return response.text
-                
+
                 SCRAPE_REQUESTS.labels(provider="scrapingbee", status="error").inc()
                 logger.warning(f"ScrapingBee failed with status {response.status_code}")
-        except Exception as e:
+        except httpx.RequestError as e:
             SCRAPE_REQUESTS.labels(provider="scrapingbee", status="exception").inc()
-            logger.error(f"ScrapingBee error: {e}")
+            logger.error("ScrapingBee error: %s", e)
         return None
 
     async def _fetch_zenrows(self, url: str) -> Optional[str]:
@@ -192,7 +193,7 @@ class ScraperService:
                     "https://api.zenrows.com/v1/",
                     params={
                         "apikey": self.zenrows_key,
-                        "url": url, 
+                        "url": url,
                         "js_render": "true",
                         "premium_proxy": "true",
                         "antibot": "true",
@@ -205,12 +206,12 @@ class ScraperService:
                 if response.status_code == 200:
                     SCRAPE_REQUESTS.labels(provider="zenrows", status="success").inc()
                     return response.text
-                
+
                 SCRAPE_REQUESTS.labels(provider="zenrows", status="error").inc()
                 logger.warning(f"ZenRows failed with status {response.status_code}")
-        except Exception as e:
+        except httpx.RequestError as e:
             SCRAPE_REQUESTS.labels(provider="zenrows", status="exception").inc()
-            logger.error(f"ZenRows error: {e}")
+            logger.error("ZenRows error: %s", e)
         return None
 
     async def _fetch_direct(self, url: str) -> Optional[str]:
@@ -225,29 +226,29 @@ class ScraperService:
                         return None
                     return response.text
                 logger.warning(f"Direct fetch failed with status {response.status_code}")
-        except Exception as e:
-            logger.error(f"Direct fetch error: {e}")
+        except httpx.RequestError as e:
+            logger.error("Direct fetch error: %s", e)
         return None
 
-    def _is_valid_html(self, html: str) -> bool:
+    def _is_valid_html(self, html: Optional[str]) -> bool:
         if not html:
             return False
-        
+
         if not html:
             return False
-        
+
         failure_markers = [
             "Please click here if you are not redirected",
             "having trouble accessing Google Search",
             "detected unusual traffic",
             "Our systems have detected unusual traffic"
         ]
-        
+
         for marker in failure_markers:
             if marker in html:
                 logger.warning(f"Detected invalid HTML with marker: {marker}")
                 return False
-                
+
         return True
 
 scraper = ScraperService()

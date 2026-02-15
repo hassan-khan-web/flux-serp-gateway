@@ -18,7 +18,7 @@ class TestEmbeddingsService:
         """Test generating embedding for single text"""
         mock_model = MagicMock()
         mock_transformer.return_value = mock_model
-        
+
         embedding_array = np.array([[0.1, 0.2, 0.3, 0.4, 0.5]])
         mock_model.encode.return_value = embedding_array
 
@@ -33,7 +33,7 @@ class TestEmbeddingsService:
         """Test generating embeddings for multiple texts"""
         mock_model = MagicMock()
         mock_transformer.return_value = mock_model
-        
+
         embedding_array = np.array([
             [0.1, 0.2, 0.3],
             [0.4, 0.5, 0.6],
@@ -64,9 +64,9 @@ class TestEmbeddingsService:
         service = EmbeddingsService()
         # Simulate model load failure (lazy loading sets it to False on failure)
         service.model = False
-        
+
         result = service.generate(["test"])
-        
+
         assert result == []
 
     @patch("sentence_transformers.SentenceTransformer")
@@ -74,7 +74,7 @@ class TestEmbeddingsService:
         """Test batch processing of embeddings"""
         mock_model = MagicMock()
         mock_transformer.return_value = mock_model
-        
+
         batch_embeddings = np.array([[0.1 * i, 0.2 * i] for i in range(10)])
         mock_model.encode.return_value = batch_embeddings
 
@@ -89,7 +89,7 @@ class TestEmbeddingsService:
         """Test that generate returns list of lists format"""
         mock_model = MagicMock()
         mock_transformer.return_value = mock_model
-        
+
         embedding_array = np.array([[0.1, 0.2], [0.3, 0.4]])
         mock_model.encode.return_value = embedding_array
 
@@ -104,7 +104,7 @@ class TestEmbeddingsService:
         """Test generating embedding for very long text"""
         mock_model = MagicMock()
         mock_transformer.return_value = mock_model
-        
+
         embedding_array = np.array([[0.1] * 384])
         mock_model.encode.return_value = embedding_array
 
@@ -118,7 +118,7 @@ class TestEmbeddingsService:
         """Test generating embedding with special characters"""
         mock_model = MagicMock()
         mock_transformer.return_value = mock_model
-        
+
         embedding_array = np.array([[0.2] * 384])
         mock_model.encode.return_value = embedding_array
 
@@ -132,7 +132,7 @@ class TestEmbeddingsService:
         """Test generating embedding with unicode characters"""
         mock_model = MagicMock()
         mock_transformer.return_value = mock_model
-        
+
         embedding_array = np.array([[0.3] * 384])
         mock_model.encode.return_value = embedding_array
 
@@ -147,7 +147,7 @@ class TestEmbeddingsService:
         """Test handling of whitespace in text"""
         mock_model = MagicMock()
         mock_transformer.return_value = mock_model
-        
+
         embedding_array = np.array([[0.1] * 384])
         mock_model.encode.return_value = embedding_array
 
@@ -162,7 +162,7 @@ class TestEmbeddingsService:
         """Test generating embeddings from numeric strings"""
         mock_model = MagicMock()
         mock_transformer.return_value = mock_model
-        
+
         embedding_array = np.array([[0.5] * 384])
         mock_model.encode.return_value = embedding_array
 
@@ -177,7 +177,7 @@ class TestEmbeddingsService:
         """Test generating embeddings from multilingual text"""
         mock_model = MagicMock()
         mock_transformer.return_value = mock_model
-        
+
         embedding_array = np.array([[0.4] * 384])
         mock_model.encode.return_value = embedding_array
 

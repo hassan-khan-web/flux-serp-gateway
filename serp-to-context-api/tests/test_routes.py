@@ -20,7 +20,7 @@ class TestSearchEndpoint:
         with patch("app.api.routes.chain") as mock_chain:
             mock_task = MagicMock()
             mock_task.id = "test-task-123"
-            
+
             # chain returns an object that has apply_async
             mock_chain_instance = MagicMock()
             mock_chain_instance.apply_async.return_value = mock_task
@@ -49,7 +49,7 @@ class TestSearchEndpoint:
         with patch("app.api.routes.chain") as mock_chain:
             mock_task = MagicMock()
             mock_task.id = "task-456"
-            
+
             mock_chain_instance = MagicMock()
             mock_chain_instance.apply_async.return_value = mock_task
             mock_chain.return_value = mock_chain_instance
@@ -61,7 +61,7 @@ class TestSearchEndpoint:
 
             assert response.status_code == 202
             assert response.json()["task_id"] == "task-456"
-            
+
             mock_chain.assert_called_once()
             # Validating args deeper is complex with chain, verifying call happened is enough for now
 

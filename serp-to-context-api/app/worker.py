@@ -45,7 +45,7 @@ celery_app.conf.update(
     },
     task_track_started=True,  # Track when the task starts
     task_ignore_result=False, # Ensure we store results
-    
+
     # Robustness Settings (Commented out for debugging)
     # task_acks_late=True,             # Only ack after task succeeds/fails
     # worker_prefetch_multiplier=1,    # Only take 1 task at a time per worker process
@@ -53,8 +53,8 @@ celery_app.conf.update(
 )
 
 @celery_app.task(
-    bind=True, 
-    name="app.worker.scrape_task", 
+    bind=True,
+    name="app.worker.scrape_task",
     queue="scrapers",
     autoretry_for=(httpx.RequestError, httpx.TimeoutException, ConnectionError),
     retry_backoff=True,
@@ -72,10 +72,10 @@ def scrape_task(
     Phase 1: I/O Bound Task
     Scrapes URL/Search Engine, parses content, and formats basic result.
     """
-    logger.info(f"Task msg received: app.worker.scrape_task query={query}")
-    
+    logger.info("Task msg received: app.worker.scrape_task query=%s", query)
+
     # Check cache first
-    logger.info(f"Checking cache for query={query}")
+    logger.info("Checking cache for query=%s", query)
     cached_data: Dict[str, Any] | None = cache.get(query, region, language, limit)
     if cached_data:
         logger.info("Cache hit!")
@@ -83,10 +83,10 @@ def scrape_task(
 
     logger.info("Cache miss. Setting up event loop.")
     try:
-            loop = asyncio.get_event_loop()
+        loop = asyncio.get_event_loop()
     except RuntimeError:
-            loop = asyncio.new_event_loop()
-            asyncio.set_event_loop(loop)
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
 
     content = None
     parsed_data = None
@@ -94,8 +94,8 @@ def scrape_task(
     if mode == "scrape":
         content = loop.run_until_complete(scraper.scrape_url(query))
         if not content:
-                # Raise exception to trigger retry
-                raise httpx.RequestError(f"Failed to scrape URL: {query}")
+            # Raise exception to trigger retry
+            raise httpx.RequestError(f"Failed to scrape URL: {query}")
         
         parsed_data = parser.parse_url_content(content)
         if parsed_data["organic_results"] and not parsed_data["organic_results"][0]["url"]:
@@ -116,7 +116,7 @@ def scrape_task(
         "formatted_output": formatted_data["formatted_output"],
         "token_estimate": formatted_data["token_estimate"]
     }
-    
+
     return result
 
 @celery_app.task(bind=True, name="app.worker.embed_task", queue="embeddings")
@@ -146,7 +146,7 @@ def embed_task(
                 vectors = embeddings_service.generate(snippets)
                 for i, res in enumerate(result["organic_results"]):
                     if i < len(vectors):
-                         res["embedding"] = vectors[i]
+                        res["embedding"] = vectors[i]
 
         # Save to Database (I/O)
         try:
@@ -157,14 +157,14 @@ def embed_task(
                 asyncio.set_event_loop(loop)
 
             loop.run_until_complete(init_db())
-            
+
             async def _save():
                 async with AsyncSessionLocal() as session:
                     await save_search_results(session, query, result["organic_results"])
-            
+
             loop.run_until_complete(_save())
         except Exception as e:
-            logger.error(f"Database save error: {e}")
+            logger.error("Database save error: %s", e)
 
         # Update Cache
         if result.get("organic_results"):
@@ -173,7 +173,7 @@ def embed_task(
         return result
 
     except Exception as e:
-        logger.error(f"Embed task failed: {e}")
+        logger.error("Embed task failed: %s", e)
         return {"error": str(e)}
 
 @celery_app.task(name="app.worker.health_check")

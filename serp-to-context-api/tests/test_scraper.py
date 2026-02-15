@@ -72,7 +72,7 @@ class TestScraperService:
     async def test_fetch_tavily_error(self, scraper):
         """Test Tavily error handling"""
         with patch('httpx.AsyncClient.post', new_callable=AsyncMock) as mock_post:
-            mock_post.side_effect = Exception("API error")
+            mock_post.side_effect = httpx.RequestError("API error", request=MagicMock())
 
             with patch('app.services.scraper.logger.error') as mock_error:
                 result = await scraper._fetch_tavily("query")
@@ -84,7 +84,7 @@ class TestScraperService:
     async def test_fetch_tavily_timeout(self, scraper):
         """Test Tavily timeout handling"""
         with patch('httpx.AsyncClient.post', new_callable=AsyncMock) as mock_post:
-            mock_post.side_effect = asyncio.TimeoutError("Request timeout")
+            mock_post.side_effect = httpx.TimeoutException("Request timeout", request=MagicMock())
 
             with patch('app.services.scraper.logger.error') as mock_error:
                 result = await scraper._fetch_tavily("query", limit=10)
@@ -251,7 +251,7 @@ class TestScraperEdgeCases:
     async def test_very_long_query(self, scraper):
         """Test scraper with very long query"""
         long_query = "python " * 1000
-        
+
         with patch.object(scraper, '_fetch_tavily', new_callable=AsyncMock) as mock_tavily:
             mock_tavily.return_value = {"results": []}
 
@@ -263,7 +263,7 @@ class TestScraperEdgeCases:
     async def test_special_characters_in_query(self, scraper):
         """Test scraper with special characters"""
         query = "python @"
-        
+
         with patch.object(scraper, '_fetch_tavily', new_callable=AsyncMock) as mock_tavily:
             mock_tavily.return_value = {"results": []}
 

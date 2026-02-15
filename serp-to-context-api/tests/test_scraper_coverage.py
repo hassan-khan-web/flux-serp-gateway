@@ -1,6 +1,7 @@
 import pytest
 import asyncio
 from unittest.mock import patch, MagicMock, AsyncMock
+import httpx
 from app.services.scraper import ScraperService
 
 class TestScraperCoverage:
@@ -18,25 +19,25 @@ class TestScraperCoverage:
     @pytest.mark.asyncio
     async def test_scrape_url_fallback_chain(self, scraper):
         """Test fallback: Tavily -> ScrapingBee -> ZenRows -> Direct"""
-        
+
         # 1. Tavily fails
         with patch.object(scraper, '_fetch_tavily_extract', new_callable=AsyncMock) as mock_tavily:
             mock_tavily.return_value = None
-            
+
             # 2. ScrapingBee fails
             with patch.object(scraper, '_fetch_scrapingbee', new_callable=AsyncMock) as mock_bee:
                 mock_bee.return_value = None
-                
+
                 # 3. ZenRows fails
                 with patch.object(scraper, '_fetch_zenrows', new_callable=AsyncMock) as mock_zenrows:
                     mock_zenrows.return_value = None
-                    
+
                     # 4. Direct succeeds
                     with patch.object(scraper, '_fetch_direct', new_callable=AsyncMock) as mock_direct:
                         mock_direct.return_value = "<html>Direct Content</html>"
-                        
+
                         result = await scraper.scrape_url("http://test.com")
-                        
+
                         assert result == "<html>Direct Content</html>"
                         mock_tavily.assert_called_once()
                         mock_bee.assert_called_once()
@@ -49,12 +50,12 @@ class TestScraperCoverage:
         mock_response = MagicMock()
         mock_response.status_code = 200
         mock_response.text = "<html>Bee Content</html>"
-        
+
         with patch('httpx.AsyncClient.get', new_callable=AsyncMock) as mock_get:
             mock_get.return_value = mock_response
-            
+
             result = await scraper._fetch_scrapingbee("http://test.com")
-            
+
             assert result == "<html>Bee Content</html>"
 
     @pytest.mark.asyncio
@@ -62,22 +63,22 @@ class TestScraperCoverage:
         """Test failed ScrapingBee fetch"""
         mock_response = MagicMock()
         mock_response.status_code = 500
-        
+
         with patch('httpx.AsyncClient.get', new_callable=AsyncMock) as mock_get:
             mock_get.return_value = mock_response
-            
+
             result = await scraper._fetch_scrapingbee("http://test.com")
-            
+
             assert result is None
 
     @pytest.mark.asyncio
     async def test_fetch_scrapingbee_exception(self, scraper):
         """Test ScrapingBee exception"""
         with patch('httpx.AsyncClient.get', new_callable=AsyncMock) as mock_get:
-            mock_get.side_effect = Exception("Connection error")
-            
+            mock_get.side_effect = httpx.RequestError("Connection error", request=MagicMock())
+
             result = await scraper._fetch_scrapingbee("http://test.com")
-            
+
             assert result is None
 
     @pytest.mark.asyncio
@@ -86,12 +87,12 @@ class TestScraperCoverage:
         mock_response = MagicMock()
         mock_response.status_code = 200
         mock_response.text = "<html>ZenRows Content</html>"
-        
+
         with patch('httpx.AsyncClient.get', new_callable=AsyncMock) as mock_get:
             mock_get.return_value = mock_response
-            
+
             result = await scraper._fetch_zenrows("http://test.com")
-            
+
             assert result == "<html>ZenRows Content</html>"
 
     @pytest.mark.asyncio
@@ -99,23 +100,23 @@ class TestScraperCoverage:
         """Test failed ZenRows fetch"""
         mock_response = MagicMock()
         mock_response.status_code = 403
-        
+
         with patch('httpx.AsyncClient.get', new_callable=AsyncMock) as mock_get:
             mock_get.return_value = mock_response
-            
+
             result = await scraper._fetch_zenrows("http://test.com")
-            
+
             assert result is None
 
     @pytest.mark.asyncio
-    async def test_fetch_zenrows_exception(self, scraper):
-        """Test ZenRows exception"""
-        with patch('httpx.AsyncClient.get', new_callable=AsyncMock) as mock_get:
-            mock_get.side_effect = Exception("Timeout")
-            
-            result = await scraper._fetch_zenrows("http://test.com")
-            
-            assert result is None
+    @patch("httpx.AsyncClient.get")
+    async def test_fetch_zenrows_exception(self, mock_get, scraper):
+        """Test ZenRows fetch with exception"""
+        mock_get.side_effect = httpx.RequestError("Timeout", request=MagicMock())
+
+        result = await scraper._fetch_zenrows("https://example.com")
+
+        assert result is None
 
     @pytest.mark.asyncio
     async def test_fetch_direct_captcha(self, scraper):
@@ -123,22 +124,22 @@ class TestScraperCoverage:
         mock_response = MagicMock()
         mock_response.status_code = 200
         mock_response.text = "<html>Please verify you are human (captcha)</html>"
-        
+
         with patch('httpx.AsyncClient.get', new_callable=AsyncMock) as mock_get:
             mock_get.return_value = mock_response
-            
+
             result = await scraper._fetch_direct("http://test.com")
-            
+
             assert result is None
 
     @pytest.mark.asyncio
     async def test_fetch_direct_exception(self, scraper):
         """Test Direct fetch exception"""
         with patch('httpx.AsyncClient.get', new_callable=AsyncMock) as mock_get:
-            mock_get.side_effect = Exception("Connection refused")
-            
+            mock_get.side_effect = httpx.RequestError("Connection refused", request=MagicMock())
+
             result = await scraper._fetch_direct("http://test.com")
-            
+
             assert result is None
 
     @pytest.mark.asyncio
@@ -149,20 +150,20 @@ class TestScraperCoverage:
             with patch.object(scraper, '_fetch_scrapingbee', return_value=None):
                 with patch.object(scraper, '_fetch_zenrows', return_value=None):
                     with patch.object(scraper, '_fetch_direct', return_value="<html>Debug Content</html>"):
-                        
+
                         with patch('builtins.open', new_callable=MagicMock) as mock_open:
                              # Mock the file handle returned by open()
                             mock_file = MagicMock()
                             mock_open.return_value.__enter__.return_value = mock_file
-                            
+
                             await scraper.fetch_results("query")
-                            
+
                             # Verify file was opened for writing
                             mock_open.assert_called()
                             args, _ = mock_open.call_args
                             assert "debug.html" in args[0]
                             assert args[1] == "w"
-                            
+
                             # Verify content was written
                             mock_file.write.assert_called_with("<html>Debug Content</html>")
 

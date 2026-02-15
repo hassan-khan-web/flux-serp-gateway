@@ -20,7 +20,7 @@ def mock_html_content():
     debug_html_path = PROJECT_ROOT / "debug.html"
     if not debug_html_path.exists():
         return "<html><body><h1>Mock Search Result</h1><div class='g'><a href='https://example.com'><h3>Example Domain</h3></a></div></body></html>"
-    
+
     with open(debug_html_path, "r", encoding="utf-8") as f:
         return f.read()
 

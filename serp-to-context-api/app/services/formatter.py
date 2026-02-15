@@ -7,11 +7,11 @@ class FormatterService:
     def format_response(self, query: str, parsed_data: Dict) -> Dict:
         organic = parsed_data.get("organic_results", [])
         ai_overview = parsed_data.get("ai_overview")
-        
+
         unique_results = self._deduplicate_results(organic)
-        
+
         markdown_output = self._generate_markdown(query, ai_overview or "", unique_results)
-        
+
         token_count = self._estimate_tokens(markdown_output)
 
         return {
@@ -25,7 +25,7 @@ class FormatterService:
     def _deduplicate_results(self, results: List[Dict], threshold: float = 0.85) -> List[Dict]:
         if not results:
             return []
-        
+
         if len(results) == 1:
             return results
 
@@ -36,9 +36,9 @@ class FormatterService:
 
             vectorizer = TfidfVectorizer().fit_transform(snippets)
             vectors = vectorizer.toarray()
-            
+
             kept_indices: List[int] = []
-            
+
             for i in range(len(results)):
                 is_duplicate = False
                 for j in kept_indices:
@@ -46,33 +46,33 @@ class FormatterService:
                     if sim > threshold:
                         is_duplicate = True
                         break
-                
+
                 if not is_duplicate:
                     kept_indices.append(i)
-            
+
             return [results[i] for i in kept_indices]
 
         except Exception as e:
             logger.error(f"Deduplication failed: {e}")
-            return results 
+            return results
 
     def _generate_markdown(self, query: str, ai_overview: Optional[str], results: List[Dict]) -> str:
         md = [f"# Search Results for: {query}\n"]
-        
+
         if ai_overview:
             md.append(f"## AI Overview\n{ai_overview}\n")
             md.append("---\n")
-            
+
         sorted_results = sorted(results, key=lambda x: x.get("score", 0.0), reverse=True)
-            
+
         for idx, res in enumerate(sorted_results, 1):
             score = res.get("score", 0.0)
             score_label = f"(Credibility Score: {score})" if score > 0 else ""
-            
+
             md.append(f"### {idx}. {res.get('title', 'No Title')} {score_label}")
             md.append(f"URL: {res.get('url', 'No URL')}")
             md.append(f"Snippet: {res.get('snippet', '')}\n")
-            
+
         return "\n".join(md)
 
     def _estimate_tokens(self, text: str) -> int:

@@ -17,5 +17,5 @@ async def save_search_results(session: AsyncSession, query: str, results: List[D
             embedding=res.get("embedding")
         )
         session.add(db_item)
-    
+
     await session.commit()
