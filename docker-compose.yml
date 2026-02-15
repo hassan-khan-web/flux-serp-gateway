@@ -37,7 +37,7 @@ services:
     build: .
     hostname: worker-io
     healthcheck:
-      test: ["CMD-SHELL", "celery -A app.worker.celery_app inspect ping -d celery@worker-io"]
+      test: [ "CMD-SHELL", "celery -A app.worker.celery_app inspect ping -d celery@worker-io" ]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -60,7 +60,7 @@ services:
     build: .
     hostname: worker-cpu
     healthcheck:
-      test: ["CMD-SHELL", "celery -A app.worker.celery_app inspect ping -d celery@worker-cpu"]
+      test: [ "CMD-SHELL", "celery -A app.worker.celery_app inspect ping -d celery@worker-cpu" ]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -104,6 +104,17 @@ services:
       - grafana_data:/var/lib/grafana
     ports:
       - "3000:3000"
+    networks:
+      - app-network
+
+  flower:
+    image: mher/flower
+    container_name: flux-flower
+    command: celery --broker=redis://redis:6379/0 flower --port=5555
+    ports:
+      - "5555:5555"
+    depends_on:
+      - redis
     networks:
       - app-network
 

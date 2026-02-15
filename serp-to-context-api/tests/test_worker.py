@@ -2,6 +2,8 @@ import pytest
 from unittest.mock import MagicMock, patch, AsyncMock
 from app.worker import scrape_task, embed_task
 from app.worker import celery_app
+import celery.exceptions
+import httpx
 
 
 class TestWorkerTask:
@@ -153,9 +155,9 @@ class TestWorkerTask:
         """Test scrape_task error handling"""
         mock_cache.get.side_effect = Exception("Cache error")
         
-        result = scrape_task.apply(args=["test", "us", "en", 10, "search"]).get()
-        
-        assert "error" in result
+        # Verify that the exception propagates (so Celery can handle it/fail the task)
+        with pytest.raises(Exception, match="Cache error"):
+            scrape_task.apply(args=["test", "us", "en", 10, "search"]).get()
 
     @patch("app.worker.scraper")
     @patch("app.worker.parser")
@@ -169,10 +171,9 @@ class TestWorkerTask:
         mock_cache.get.return_value = None
         mock_scraper.fetch_results = AsyncMock(return_value=None)
         
-        result = scrape_task.apply(args=["test", "us", "en", 10, "search"]).get()
-        
-        assert result is not None
-        assert "error" in result
+        # Verify that the task retries (Celery raises Retry exception locally)
+        with pytest.raises(celery.exceptions.Retry):
+            scrape_task.apply(args=["test", "us", "en", 10, "search"]).get()
 
     @patch("app.worker.scraper")
     @patch("app.worker.parser")
