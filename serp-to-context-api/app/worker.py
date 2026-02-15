@@ -46,10 +46,10 @@ celery_app.conf.update(
     task_track_started=True,  # Track when the task starts
     task_ignore_result=False, # Ensure we store results
 
-    # Robustness Settings (Commented out for debugging)
-    # task_acks_late=True,             # Only ack after task succeeds/fails
-    # worker_prefetch_multiplier=1,    # Only take 1 task at a time per worker process
-    # task_reject_on_worker_lost=True, # Re-queue task if worker crashes
+    # Robustness Settings
+    task_acks_late=True,             # Only ack after task succeeds/fails
+    worker_prefetch_multiplier=1,    # Only take 1 task at a time per worker process
+    task_reject_on_worker_lost=True, # Re-queue task if worker crashes
 )
 
 @celery_app.task(
@@ -132,49 +132,45 @@ def embed_task(
     Phase 2: CPU Bound Task
     Generates embeddings, saves to DB, and updates cache.
     """
+    # Check if previous task failed
+    if "error" in result:
+            return result
+
+    query = result.get("query", "")
+
+    # Generate Embeddings (CPU Intensive)
+    if output_format and output_format.lower() in ["vector", "vectors"]:
+        snippets = [res.get("snippet", "") for res in result.get("organic_results", [])]
+        if snippets:
+            # This is the blocking CPU part
+            vectors = embeddings_service.generate(snippets)
+            for i, res in enumerate(result["organic_results"]):
+                if i < len(vectors):
+                    res["embedding"] = vectors[i]
+
+    # Save to Database (I/O)
     try:
-        if "error" in result:
-             return result
-
-        query = result.get("query", "")
-
-        # Generate Embeddings (CPU Intensive)
-        if output_format and output_format.lower() in ["vector", "vectors"]:
-            snippets = [res.get("snippet", "") for res in result.get("organic_results", [])]
-            if snippets:
-                # This is the blocking CPU part
-                vectors = embeddings_service.generate(snippets)
-                for i, res in enumerate(result["organic_results"]):
-                    if i < len(vectors):
-                        res["embedding"] = vectors[i]
-
-        # Save to Database (I/O)
         try:
-            try:
-                loop = asyncio.get_event_loop()
-            except RuntimeError:
-                loop = asyncio.new_event_loop()
-                asyncio.set_event_loop(loop)
+            loop = asyncio.get_event_loop()
+        except RuntimeError:
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
 
-            loop.run_until_complete(init_db())
+        loop.run_until_complete(init_db())
 
-            async def _save():
-                async with AsyncSessionLocal() as session:
-                    await save_search_results(session, query, result["organic_results"])
+        async def _save():
+            async with AsyncSessionLocal() as session:
+                await save_search_results(session, query, result["organic_results"])
 
-            loop.run_until_complete(_save())
-        except Exception as e:
-            logger.error("Database save error: %s", e)
-
-        # Update Cache
-        if result.get("organic_results"):
-            cache.set(query, result, region, language, limit)
-
-        return result
-
+        loop.run_until_complete(_save())
     except Exception as e:
-        logger.error("Embed task failed: %s", e)
-        return {"error": str(e)}
+        logger.error("Database save error: %s", e)
+
+    # Update Cache
+    if result.get("organic_results"):
+        cache.set(query, result, region, language, limit)
+
+    return result
 
 @celery_app.task(name="app.worker.health_check")
 def health_check():
