@@ -15,14 +15,14 @@ services:
       - app-network
 
   api:
-    build: .
+    build: ./backend
     ports:
       - "8000:8000"
     env_file:
       - .env
     environment:
       - REDIS_URL=redis://redis:6379/0
-      - PYTHONPATH=/app/serp-to-context-api
+      - PYTHONPATH=/app
       - POSTGRES_HOST=db
       - POSTGRES_PORT=5432
       - POSTGRES_USER=${POSTGRES_USER:-user}
@@ -33,15 +33,15 @@ services:
       - redis
       - db
     volumes:
-      - ./serp-to-context-api:/app/serp-to-context-api
+      - ./backend:/app
       - ./.env:/app/.env
       - prometheus_multiproc_data:/prometheus_multiproc_dir
-    command: uvicorn serp-to-context-api.main:app --host 0.0.0.0 --port 8000 --reload
+    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
     networks:
       - app-network
 
   worker-io:
-    build: .
+    build: ./backend
     hostname: worker-io
     healthcheck:
       test: [ "CMD-SHELL", "celery -A app.worker.celery_app inspect ping -d celery@worker-io" ]
@@ -53,7 +53,7 @@ services:
       - .env
     environment:
       - REDIS_URL=redis://redis:6379/0
-      - PYTHONPATH=/app/serp-to-context-api
+      - PYTHONPATH=/app
       - POSTGRES_HOST=db
       - POSTGRES_PORT=5432
       - POSTGRES_USER=${POSTGRES_USER:-user}
@@ -64,14 +64,14 @@ services:
       - redis
       - db
     volumes:
-      - ./serp-to-context-api:/app/serp-to-context-api
+      - ./backend:/app
       - ./.env:/app/.env
       - prometheus_multiproc_data:/prometheus_multiproc_dir
     networks:
       - app-network
 
   worker-cpu:
-    build: .
+    build: ./backend
     hostname: worker-cpu
     healthcheck:
       test: [ "CMD-SHELL", "celery -A app.worker.celery_app inspect ping -d celery@worker-cpu" ]
@@ -83,7 +83,7 @@ services:
       - .env
     environment:
       - REDIS_URL=redis://redis:6379/0
-      - PYTHONPATH=/app/serp-to-context-api
+      - PYTHONPATH=/app
       - POSTGRES_HOST=db
       - POSTGRES_PORT=5432
       - POSTGRES_USER=${POSTGRES_USER:-user}
@@ -94,7 +94,7 @@ services:
       - redis
       - db
     volumes:
-      - ./serp-to-context-api:/app/serp-to-context-api
+      - ./backend:/app
       - ./.env:/app/.env
       - prometheus_multiproc_data:/prometheus_multiproc_dir
     networks:

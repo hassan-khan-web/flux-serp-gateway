@@ -6,7 +6,7 @@ from typing import List, Dict, Any
 import statistics
 
 API_URL = "http://localhost:8000/search"
-DATASET_PATH = "tests/evals/dataset.json"
+DATASET_PATH = "backend/tests/evals/dataset.json"
 
 async def run_query(client: httpx.AsyncClient, question: Dict[str, Any]) -> Dict[str, Any]:
     start_time = time.time()
@@ -165,7 +165,7 @@ async def main():
     print("="*40)
 
     # Save detailed results
-    with open("tests/evals/last_run_results.json", "w") as f:
+    with open("backend/tests/evals/last_run_results.json", "w") as f:
         json.dump(results, f, indent=2)
     print("Detailed results saved to tests/evals/last_run_results.json")
 
