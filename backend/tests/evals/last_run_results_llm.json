@@ -3,7 +3,7 @@
     "id": 1,
     "query": "What is the capital of France?",
     "status": "success",
-    "latency": 2.1324126720428467,
+    "latency": 4.646604299545288,
     "result_count": 5,
     "data": {
       "query": "What is the capital of France?",
@@ -50,16 +50,16 @@
       "cached": false
     },
     "heuristic_score": 0.7333333333333332,
-    "llm_score": 0.0,
-    "llm_reasoning": "API Error: 402",
+    "llm_score": 0.75,
+    "llm_reasoning": "All provided snippets explicitly state that Paris is the capital of France and include additional contextual details about the city. The information is directly relevant to the query, covering elements such as historical capitals, current status, demographics, and geographic facts. However, the snippets vary in completeness and accuracy: some contain extraneous or inconsistent data (e.g., conflicting population figures, mentions of other cities as former capitals), and certain parts are redundant or include irrelevant tangents. These inconsistencies prevent a perfect relevance and quality rating, leading to a score of 0.75 reflecting generally correct answer with notable flaws in precision and coherence.",
     "credibility_score": 0.0,
-    "credibility_reasoning": "API Error: 402"
+    "credibility_reasoning": "JSON Decode Error: {\n  \"score\": 0.68,\n  \"reasoning\": \"The five snippets vary in provenance. Sources 1, 3, and 4 present"
   },
   {
     "id": 2,
     "query": "Who won the 2022 World Cup?",
     "status": "success",
-    "latency": 2.15470027923584,
+    "latency": 4.599221706390381,
     "result_count": 5,
     "data": {
       "query": "Who won the 2022 World Cup?",
@@ -106,16 +106,16 @@
       "cached": false
     },
     "heuristic_score": 0.7,
-    "llm_score": 0.0,
-    "llm_reasoning": "API Error: 402",
+    "llm_score": 0.9,
+    "llm_reasoning": "All five snippets explicitly state that Argentina won the 2022 World Cup, directly addressing the query. They provide correct information (Argentina as champion) and additional context about the final, score, and related details. While the snippets are longer than necessary and include extraneous historical or ancillary data, they remain relevant and accurate, delivering the required answer. The presence of extra information prevents a perfect score, but the content fully answers the query.",
     "credibility_score": 0.0,
-    "credibility_reasoning": "API Error: 402"
+    "credibility_reasoning": "JSON Decode Error: "
   },
   {
     "id": 3,
     "query": "Compare the architecture of React vs Vue for enterprise apps",
     "status": "success",
-    "latency": 2.241244077682495,
+    "latency": 4.677684307098389,
     "result_count": 5,
     "data": {
       "query": "Compare the architecture of React vs Vue for enterprise apps",
@@ -162,16 +162,16 @@
       "cached": false
     },
     "heuristic_score": 0.8200000000000001,
-    "llm_score": 0.0,
-    "llm_reasoning": "API Error: 402",
-    "credibility_score": 0.0,
-    "credibility_reasoning": "API Error: 402"
+    "llm_score": 0.8,
+    "llm_reasoning": "All five snippets discuss React versus Vue in the context of architecture, scalability, and enterprise suitability, directly addressing the query. They cover component-based approaches, modularity, built\u2011in vs external tooling, performance optimizations, and enterprise adoption trends. While the coverage is broad and sometimes overlaps with peripheral topics (e.g., PWAs or general project selection), the core architectural comparison for large\u2011scale applications is present and informative, warranting a high but not perfect score.",
+    "credibility_score": 0.45,
+    "credibility_reasoning": "None of the provided sources include identifiable URLs or domain authority, indicating they are not from established scholarly, news, or high-authority sites. The snippets consist mainly of promotional or opinionated blog-like comparisons, lacking citations, author credentials, and depth typical of expert analyses. Consequently, their trustworthiness is modest, landing in the low-to-moderate range."
   },
   {
     "id": 4,
     "query": "How to center a div in CSS using flexbox",
     "status": "success",
-    "latency": 2.2108983993530273,
+    "latency": 4.622736692428589,
     "result_count": 5,
     "data": {
       "query": "How to center a div in CSS using flexbox",
@@ -218,16 +218,16 @@
       "cached": false
     },
     "heuristic_score": 0.888888888888889,
-    "llm_score": 0.0,
-    "llm_reasoning": "API Error: 402",
-    "credibility_score": 0.0,
-    "credibility_reasoning": "API Error: 402"
+    "llm_score": 0.88,
+    "llm_reasoning": "The provided snippets directly address how to center a div using Flexbox, offering clear examples with `display: flex`, `justify-content: center`, and `align-items: center`, as well as variations for vertical/horizontal centering. They include working code samples, explanations of related properties, and practical notes (e.g., need for explicit container dimensions). However, some snippets are verbose, contain minor redundancies, and mix in unrelated centering methods (Grid, text\u2011align), which can dilute focus. Overall, they are highly relevant and useful for the query, warranting a high but not perfect score.",
+    "credibility_score": 0.45,
+    "credibility_reasoning": "All provided sources lack explicit URLs, preventing assessment of domain authority, and they appear to be extracted from generic Q&A forums without clear authorship or editorial oversight. The content is generally relevant to CSS flexbox centering, but several snippets contain inaccuracies or redundant declarations (e.g., duplicate `display: flex` rules, misused properties like `justify-content: safe center`, and unclear explanations). These issues lower the reliability of the information. Consequently, the overall credibility is moderate to low, warranting a score of 0.45."
   },
   {
     "id": 5,
     "query": "Latest developments in quantum computing 2025",
     "status": "success",
-    "latency": 2.1813220977783203,
+    "latency": 4.659222602844238,
     "result_count": 5,
     "data": {
       "query": "Latest developments in quantum computing 2025",
@@ -274,16 +274,16 @@
       "cached": false
     },
     "heuristic_score": 0.6333333333333333,
-    "llm_score": 0.0,
-    "llm_reasoning": "API Error: 402",
-    "credibility_score": 0.0,
-    "credibility_reasoning": "API Error: 402"
+    "llm_score": 0.8,
+    "llm_reasoning": "The snippets collectively address the query by covering multiple 2025 developments in quantum computing: emerging hardware architectures (trapped ion, photonic, superconducting), substantial investment figures, new partnerships and platforms (e.g., Nvidia's NVQLink), mentions of Nobel Prize recognition, and recent research milestones such as room\u2011temperature quantum communication and NSF Physics Frontier Center breakthroughs. This breadth of information directly answers the user's request for latest developments. However, the set includes some off\u2011topic or incomplete passages (e.g., regional competition details, a truncated sentence about NSF research) that reduce overall relevance and coherence, preventing a perfect score.",
+    "credibility_score": 0.35,
+    "credibility_reasoning": "All provided URLs are marked as N/A, so no domain authority can be assessed. The snippets consist mainly of promotional press releases and vague summaries that contain unverifiable claims (e.g., stock price increases of 3,000%, a 2025 Nobel Prize awarded for 1980s work) and lack citations to peer\u2011reviewed literature or reputable news outlets. The information is therefore of low reliability and trustworthy content quality."
   },
   {
     "id": 6,
     "query": "Generate a plot summary for a sci-fi movie set on Mars",
     "status": "success",
-    "latency": 2.0581135749816895,
+    "latency": 2.063185214996338,
     "result_count": 5,
     "data": {
       "query": "Generate a plot summary for a sci-fi movie set on Mars",
@@ -330,16 +330,16 @@
       "cached": false
     },
     "heuristic_score": 0.5800000000000001,
-    "llm_score": 0.0,
-    "llm_reasoning": "API Error: 402",
+    "llm_score": 0.5,
+    "llm_reasoning": "Only a single snippet contains a coherent, detailed plot summary of a sci\u2011fi movie set on Mars (the description of *The Martian*), which directly satisfies the query. However, the majority of the provided snippets are unrelated title listings, brief fragments, or low\u2011quality filler, which dilutes the overall relevance and completeness. Because the useful snippet is strong but is surrounded by irrelevant material, the overall quality is moderate rather than high.",
     "credibility_score": 0.0,
-    "credibility_reasoning": "API Error: 402"
+    "credibility_reasoning": "JSON Decode Error: "
   },
   {
     "id": 7,
     "query": "How many continents are there?",
     "status": "success",
-    "latency": 2.0909337997436523,
+    "latency": 2.100996971130371,
     "result_count": 5,
     "data": {
       "query": "How many continents are there?",
@@ -386,16 +386,16 @@
       "cached": false
     },
     "heuristic_score": 0.72,
-    "llm_score": 0.0,
-    "llm_reasoning": "API Error: 402",
-    "credibility_score": 0.0,
-    "credibility_reasoning": "API Error: 402"
+    "llm_score": 0.9,
+    "llm_reasoning": "The snippets collectively address the query about how many continents exist by presenting multiple accepted models (4, 5, 6, and 7 continents), explaining the reasons for differing counts, and providing geographical context, definitions, and examples. They cite reputable sources such as National Geographic and educational texts, discuss continental definitions, and illustrate variations in classification. However, the information is somewhat repetitive, includes minor formatting issues, and some excerpts lack clear citations or are truncated, preventing a flawless, concise answer. Overall, the set is highly relevant and comprehensive, though not perfectly polished.",
+    "credibility_score": 0.73,
+    "credibility_reasoning": "The five snippets cite a mix of sources with no clear domain information. Sources 3 and 5 explicitly reference reputable institutions such as National Geographic Society, Routledge, and Britannica, and provide citations to books and academic works, indicating higher authority. Sources 1, 2, and 4 lack identifiable domains and appear more like informal or educational web posts, reducing their trustworthiness. Combining these signals yields a moderate\u2011high overall credibility score around 0.73."
   },
   {
     "id": 8,
     "query": "Difference between machine learning and deep learning",
     "status": "success",
-    "latency": 2.1511452198028564,
+    "latency": 2.2644546031951904,
     "result_count": 5,
     "data": {
       "query": "Difference between machine learning and deep learning",
@@ -442,16 +442,16 @@
       "cached": false
     },
     "heuristic_score": 0.8666666666666666,
-    "llm_score": 0.0,
-    "llm_reasoning": "API Error: 402",
-    "credibility_score": 0.0,
-    "credibility_reasoning": "API Error: 402"
+    "llm_score": 0.9,
+    "llm_reasoning": "All three snippets directly address the query by explaining that deep learning is a subset of machine learning, describing how each works, their differences in data requirements, training methods, and use cases. They provide clear comparisons, examples, and highlight practical considerations, which fully answers the question. The content is accurate and comprehensive, though somewhat repetitive, which prevents a perfect score.",
+    "credibility_score": 0.65,
+    "credibility_reasoning": "All five sources provide broadly correct definitions and comparisons of machine learning and deep learning, but none cite academic or authoritative references, and all have missing or placeholder URLs. The explanations are reliable in content but lack verifiable domain authority or scholarly citations, resulting in moderate credibility\u2014higher than anecdotal blogs but below peer\u2011reviewed articles or reputable news outlets."
   },
   {
     "id": 9,
     "query": "Explain the difference between optimistic and pessimistic locking in databases",
     "status": "success",
-    "latency": 2.1788923740386963,
+    "latency": 2.364765167236328,
     "result_count": 5,
     "data": {
       "query": "Explain the difference between optimistic and pessimistic locking in databases",
@@ -498,16 +498,16 @@
       "cached": false
     },
     "heuristic_score": 0.7,
-    "llm_score": 0.0,
-    "llm_reasoning": "API Error: 402",
-    "credibility_score": 0.0,
-    "credibility_reasoning": "API Error: 402"
+    "llm_score": 0.92,
+    "llm_reasoning": "The snippets collectively define both optimistic and pessimistic locking, contrast their behavior, discuss when each is appropriate, describe conflict detection and retry mechanisms, and provide illustrative examples (e.g., read\u2011write lock ordering, version checks, Redis leases). They cover the core concepts asked for in the query and include practical scenarios, though they are somewhat repetitive and could be more concise. Overall they provide a clear, relevant answer to \"Explain the difference between optimistic and pessimistic locking in databases\".",
+    "credibility_score": 0.55,
+    "credibility_reasoning": "The five snippets lack explicit URLs, making it impossible to assess domain authority; they appear to be informal explanations from blogs, forum posts, or Q&A sites rather than scholarly or professionally edited articles. The content is generally accurate regarding optimistic versus pessimistic locking, but several statements contain technical inaccuracies or oversimplifications (e.g., claiming a write lock blocks all shared locks in Source\u202f1, or describing pessimistic locking as a simple queue). The prose is sometimes promotional or repetitive and mixes high\u2011level concepts with superficial details without citations. Consequently, while the information is useful for basic understanding, it does not meet the standards of high\u2011trust sources such as peer\u2011reviewed papers or authoritative textbooks, leading to a moderate\u2011low credibility score of approximately 0.55."
   },
   {
     "id": 10,
     "query": "Current stock price of NVIDIA",
     "status": "success",
-    "latency": 2.120495557785034,
+    "latency": 2.1417036056518555,
     "result_count": 5,
     "data": {
       "query": "Current stock price of NVIDIA",
@@ -554,9 +554,9 @@
       "cached": false
     },
     "heuristic_score": 0.6799999999999999,
-    "llm_score": 0.0,
-    "llm_reasoning": "API Error: 402",
-    "credibility_score": 0.0,
-    "credibility_reasoning": "API Error: 402"
+    "llm_score": 0.18,
+    "llm_reasoning": "The snippets contain scattered price figures but none clearly present the current stock price of NVIDIA; most entries are outdated, include future-dated or placeholder values, and are buried in unrelated financial and news content, so they do not reliably answer the query.",
+    "credibility_score": 0.35,
+    "credibility_reasoning": "All provided sources lack identifiable domains, making it impossible to assess domain authority or reputation. The snippets are either incomplete placeholder data (e.g., N/A URLs), delayed market figures, generic financial summaries, or promotional content without clear editorial oversight. Such characteristics indicate low reliability and limited traceability, resulting in a modest credibility rating."
   }
 ]
