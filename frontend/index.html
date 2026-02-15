@@ -94,7 +94,11 @@
             <div class="panel">
                 <div class="panel-header">
                     <span>LLM-Ready Context (Markdown)</span>
-                    <span class="badge token-stat" id="tokenStat">0 Tokens</span>
+                    <div class="header-stats">
+                        <span class="badge score-badge" id="relevanceScore" title="Relevance Score">Rel: --</span>
+                        <span class="badge score-badge" id="credibilityScore" title="Source Credibility">Cred: --</span>
+                        <span class="badge token-stat" id="tokenStat">0 Tokens</span>
+                    </div>
                 </div>
                 <div class="panel-content" id="markdownOutput">// Waiting for input...</div>
             </div>

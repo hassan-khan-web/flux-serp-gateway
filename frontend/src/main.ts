@@ -213,6 +213,24 @@ async function performSearch(): Promise<void> {
             tokenStat.textContent = `~${data.token_estimate} Tokens`;
         }
 
+        // Scoring Logic
+        const relBadge = document.getElementById('relevanceScore');
+        const credBadge = document.getElementById('credibilityScore');
+
+        if (relBadge && data.relevance_score !== undefined) {
+            const score = data.relevance_score;
+            relBadge.textContent = `Rel: ${Math.round(score * 100)}%`;
+            relBadge.title = data.relevance_reasoning || "Relevance Score";
+            relBadge.className = 'badge score-badge ' + (score > 0.7 ? 'score-high' : score > 0.4 ? 'score-med' : 'score-low');
+        }
+
+        if (credBadge && data.credibility_score !== undefined) {
+            const score = data.credibility_score;
+            credBadge.textContent = `Cred: ${Math.round(score * 100)}%`;
+            credBadge.title = data.credibility_reasoning || "Source Credibility";
+            credBadge.className = 'badge score-badge ' + (score > 0.7 ? 'score-high' : score > 0.4 ? 'score-med' : 'score-low');
+        }
+
         statusBadge.textContent = response.ok ? (data.cached ? 'Cached ⚡' : 'Live 🟢') : 'Error 🔴';
 
     } catch (err: any) {

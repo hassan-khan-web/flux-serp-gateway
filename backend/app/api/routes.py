@@ -16,7 +16,8 @@ RATE_LIMIT_SECONDS = int(os.getenv("RATE_LIMIT_SECONDS", "60"))
 @router.post("/search", response_model=TaskResponse, status_code=202, dependencies=[Depends(RateLimiter(times=RATE_LIMIT_TIMES, seconds=RATE_LIMIT_SECONDS))])
 async def search_endpoint(request: SearchRequest) -> TaskResponse:
     try:
-        # Chain the tasks: Scrape -> Embed
+        # Chain the tasks: Scrape -> Embed -> Score
+        from app.worker import scrape_task, embed_task, score_task
         task_chain = chain(
             scrape_task.s(
                 query=request.query,
@@ -30,7 +31,8 @@ async def search_endpoint(request: SearchRequest) -> TaskResponse:
                 language=request.language,
                 limit=request.limit,
                 output_format=request.output_format
-            )
+            ),
+            score_task.s()
         )
 
         task = task_chain.apply_async()

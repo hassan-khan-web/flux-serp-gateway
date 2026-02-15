@@ -22,6 +22,10 @@ class SearchResponse(BaseModel):
     organic_results: List[OrganicResult] = []
     formatted_output: str
     token_estimate: int
+    relevance_score: Optional[float] = 0.0
+    relevance_reasoning: Optional[str] = None
+    credibility_score: Optional[float] = 0.0
+    credibility_reasoning: Optional[str] = None
     cached: bool
 
 class TaskResponse(BaseModel):

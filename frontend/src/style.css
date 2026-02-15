@@ -221,6 +221,27 @@ button.run-btn:disabled {
     background: rgba(56, 139, 253, 0.15);
 }
 
+.header-stats {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.score-badge {
+    cursor: help;
+    transition: all 0.2s;
+    border: 1px solid transparent;
+}
+
+.score-badge:hover {
+    border-color: var(--accent);
+    background: rgba(88, 166, 255, 0.1);
+}
+
+.score-high { color: #7ee787; background: rgba(46, 160, 67, 0.15); }
+.score-med { color: #d29922; background: rgba(187, 128, 9, 0.15); }
+.score-low { color: #f85149; background: rgba(248, 81, 73, 0.15); }
+
 .panel-content {
     flex: 1;
     padding: 1rem;

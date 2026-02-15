@@ -10,6 +10,7 @@ from app.services.embeddings import embeddings_service
 from app.utils.cache import cache
 from app.db.database import AsyncSessionLocal, init_db
 from app.db.repository import save_search_results
+from app.services.llm_judge import llm_judge
 from app.utils.logger import logger
 import httpx
 from prometheus_client import Counter
@@ -180,6 +181,51 @@ def embed_task(
     # Update Cache
     if result.get("organic_results"):
         cache.set(query, result, region, language, limit)
+
+    return result
+
+@celery_app.task(bind=True, name="app.worker.score_task", queue="scrapers")
+def score_task(
+    self: Task,
+    result: Dict[str, Any]
+) -> Dict[str, Any]:
+    """
+    Phase 3: Scoring Task
+    Evaluates relevance and credibility using LLM.
+    """
+    if "error" in result:
+        return result
+
+    query = result.get("query", "")
+    organic_results = result.get("organic_results", [])
+    snippets = [r.get("snippet", "") for r in organic_results]
+
+    try:
+        loop = asyncio.get_event_loop()
+    except RuntimeError:
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+
+    # Run scoring in parallel
+    async def _score():
+        rel_task = llm_judge.evaluate_relevance(query, snippets)
+        cred_task = llm_judge.evaluate_credibility(query, organic_results)
+        return await asyncio.gather(rel_task, cred_task)
+
+    try:
+        rel_out, cred_out = loop.run_until_complete(_score())
+        
+        result["relevance_score"] = rel_out.get("score", 0.0)
+        result["relevance_reasoning"] = rel_out.get("reasoning", "No reasoning provided.")
+        result["credibility_score"] = cred_out.get("score", 0.0)
+        result["credibility_reasoning"] = cred_out.get("reasoning", "No reasoning provided.")
+        
+        logger.info("Scoring complete for query=%s. Relevance: %s, Credibility: %s", 
+                    query, result["relevance_score"], result["credibility_score"])
+    except Exception as e:
+        logger.error("Scoring task error: %s", e)
+        result["relevance_score"] = 0.0
+        result["credibility_score"] = 0.0
 
     return result
 
