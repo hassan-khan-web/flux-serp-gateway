@@ -87,6 +87,67 @@ class LLMJudge:
                 print(f"Error evaluating query '{query}': {e}")
                 return {"score": 0.0, "reasoning": f"Evaluation failed: {str(e)}"}
 
+    async def evaluate_credibility(self, query: str, results: List[Dict[str, Any]]) -> Dict[str, Any]:
+        """
+        Evaluates the credibility of the sources.
+        Returns a dictionary with score (0.0-1.0) and reasoning.
+        """
+        if not results:
+            return {"score": 0.0, "reasoning": "No results provided."}
+
+        # Format sources for the prompt
+        sources_text = []
+        for i, res in enumerate(results):
+            sources_text.append(f"Source {i+1}:\nURL: {res.get('link', 'N/A')}\nSnippet: {res.get('snippet', 'N/A')}\n")
+        
+        sources_str = "\n".join(sources_text)
+
+        prompt = f"""
+        You are an expert information quality judge.
+        Your task is to evaluate the CREDIBILITY of the sources retrieved for the user's query.
+
+        User Query: "{query}"
+
+        Sources:
+        {sources_str}
+
+        Instructions:
+        1. Analyze the URLs (domain authority) and the content quality in the snippets.
+        2. Assign a SINGLE aggregate credibility score between 0.0 (low trust/spam) and 1.0 (highly authoritative/academic/verified news).
+        3. High scores: .gov, .edu, known news outlets, official documentation.
+        4. Low scores: random blogs, forums, unverified user content, spammy domains.
+        5. Provide a brief reasoning.
+        6. Output ONLY a SINGLE valid JSON object in the following format:
+        {{
+            "score": <float>,
+            "reasoning": "<string>"
+        }}
+        """
+
+        retries = 3
+        base_delay = 15
+
+        for attempt in range(retries + 1):
+            try:
+                response = await asyncio.to_thread(
+                    self.model.generate_content, 
+                    prompt,
+                    generation_config={"response_mime_type": "application/json"}
+                )
+                result = json.loads(response.text)
+                if isinstance(result, list):
+                    result = result[0] if result else {"score": 0.0, "reasoning": "Empty list"}
+                return result
+            except Exception as e:
+                if "429" in str(e) or "quota" in str(e).lower():
+                    if attempt < retries:
+                        wait_time = base_delay * (attempt + 1)
+                        print(f"Credibility Rate limit hit for '{query}'. Retrying in {wait_time}s...")
+                        await asyncio.sleep(wait_time)
+                        continue
+                print(f"Error checking credibility for '{query}': {e}")
+                return {"score": 0.0, "reasoning": f"Error: {str(e)}"}
+
 async def run_query(client: httpx.AsyncClient, question: Dict[str, Any]) -> Dict[str, Any]:
     start_time = time.time()
     payload = {
@@ -254,22 +315,51 @@ async def main():
                 res["heuristic_score"] = heuristic_score
                 
                 if judge:
-                    eval_tasks.append(judge.evaluate(res["query"], snippets))
+                    # Parallel calls for Relevance and Credibility
+                    relevance_task = judge.evaluate(res["query"], snippets)
+                    credibility_task = judge.evaluate_credibility(res["query"], organic_results)
+                    eval_tasks.append(relevance_task)
+                    eval_tasks.append(credibility_task)
                 else:
-                    eval_tasks.append(asyncio.sleep(0, result={"score": heuristic_score, "reasoning": "Heuristic fallback"})) # Mock
+                    eval_tasks.append(asyncio.sleep(0, result={"score": heuristic_score, "reasoning": "Heuristic fallback"}))
+                    eval_tasks.append(asyncio.sleep(0, result={"score": 0.0, "reasoning": "No LLM"}))
             else:
                 # Failed search
                 res["heuristic_score"] = 0.0
+                eval_tasks.append(asyncio.sleep(0, result={"score": 0.0, "reasoning": "Search failed"}))
                 eval_tasks.append(asyncio.sleep(0, result={"score": 0.0, "reasoning": "Search failed"}))
         
         # Execute batch evaluation
         eval_outputs = await asyncio.gather(*eval_tasks)
         
-        # Merge back
-        for res, eval_out in zip(batch, eval_outputs):
-            res["llm_score"] = eval_out.get("score", 0.0)
-            res["llm_reasoning"] = eval_out.get("reasoning", "No description")
-            evaluated_results.append(res)
+        # Merge back (2 outputs per result if judge exists)
+        if judge:
+            # We have 2 * batch_size outputs
+            # Structure: [Rel1, Cred1, Rel2, Cred2, ...]
+            for i, res in enumerate(batch):
+                rel_idx = i * 2
+                cred_idx = i * 2 + 1
+                
+                rel_out = eval_outputs[rel_idx]
+                cred_out = eval_outputs[cred_idx]
+                
+                res["llm_score"] = rel_out.get("score", 0.0)
+                res["llm_reasoning"] = rel_out.get("reasoning", "No description")
+                
+                res["credibility_score"] = cred_out.get("score", 0.0)
+                res["credibility_reasoning"] = cred_out.get("reasoning", "No description")
+                
+                evaluated_results.append(res)
+        else:
+            # 2 outputs per result (mock)
+            for i, res in enumerate(batch):
+                rel_idx = i * 2
+                rel_out = eval_outputs[rel_idx]
+                
+                res["llm_score"] = rel_out.get("score", 0.0)
+                res["llm_reasoning"] = rel_out.get("reasoning", "No description")
+                # No credibility for heuristic mode
+                evaluated_results.append(res)
             
         print(f"Evaluated {min(i + eval_batch_size, len(results))}/{len(results)} queries...")
         if judge:
@@ -294,7 +384,12 @@ async def main():
     print(f"Success Rate:       {len(successes)}/{len(dataset)} ({len(successes)/len(dataset)*100:.1f}%)")
     print(f"Avg Latency:        {avg_latency:.2f}s")
     print(f"Avg Heuristic:      {avg_heuristic_score:.2f}")
+    
+    cred_scores = [r.get("credibility_score", 0.0) for r in successes]
+    avg_cred_score = statistics.mean(cred_scores) if cred_scores else 0
+    
     print(f"Avg LLM Relevance:  {avg_llm_score:.2f}")
+    print(f"Avg Credibility:    {avg_cred_score:.2f}")
     print("="*50)
 
     # Save detailed results
