@@ -6,105 +6,128 @@ import httpx
 import statistics
 from typing import List, Dict, Any, Optional
 from dotenv import load_dotenv
-import google.generativeai as genai
 
 # Load environment variables
 load_dotenv()
 
 API_URL = "http://localhost:8000/search"
 DATASET_PATH = "backend/tests/evals/dataset.json"
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
+OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions"
 
 class LLMJudge:
-    def __init__(self, api_key: str, model_name: str = "gemini-2.0-flash"):
+    def __init__(self, api_key: str, model_name: str = "anthropic/claude-opus-4.6"):
         self.api_key = api_key
         self.model_name = model_name
-        genai.configure(api_key=self.api_key)
-        self.model = genai.GenerativeModel(self.model_name)
+        self.headers = {
+            "Authorization": f"Bearer {self.api_key}",
+            "Content-Type": "application/json",
+            "HTTP-Referer": "http://localhost:8000", # Required by OpenRouter for some tiers
+            "X-Title": "Flux Search Evals"
+        }
+
+    async def _call_api(self, messages: List[Dict[str, str]]) -> Dict[str, Any]:
+        """Helper to call OpenRouter API with retries"""
+        payload = {
+            "model": self.model_name,
+            "messages": messages,
+            "response_format": {"type": "json_object"},
+            "max_tokens": 1000
+        }
+        
+        retries = 3
+        base_delay = 5
+
+        async with httpx.AsyncClient() as client:
+            for attempt in range(retries + 1):
+                try:
+                    response = await client.post(
+                        OPENROUTER_URL, 
+                        headers=self.headers, 
+                        json=payload, 
+                        timeout=30.0
+                    )
+                    
+                    if response.status_code == 200:
+                        content = response.json()["choices"][0]["message"]["content"]
+                        try:
+                            # Clean up potential markdown code blocks
+                            if "```json" in content:
+                                content = content.split("```json")[1].split("```")[0].strip()
+                            elif "```" in content:
+                                content = content.split("```")[1].split("```")[0].strip()
+                                
+                            result = json.loads(content)
+                            if isinstance(result, list):
+                                return result[0] if result else {"score": 0.0, "reasoning": "Empty list"}
+                            return result
+                        except json.JSONDecodeError:
+                            return {"score": 0.0, "reasoning": f"JSON Decode Error: {content[:100]}"}
+                    
+                    elif response.status_code == 429:
+                        wait_time = base_delay * (attempt + 1)
+                        print(f"OpenRouter 429 Rate Limit. Retrying in {wait_time}s...")
+                        await asyncio.sleep(wait_time)
+                        continue
+                    else:
+                        print(f"OpenRouter Error {response.status_code}: {response.text}")
+                        return {"score": 0.0, "reasoning": f"API Error: {response.status_code}"}
+                        
+                except Exception as e:
+                    print(f"Request Error: {e}")
+                    if attempt < retries:
+                        await asyncio.sleep(base_delay)
+                        continue
+                    return {"score": 0.0, "reasoning": f"Exception: {str(e)}"}
+        
+        return {"score": 0.0, "reasoning": "Max retries exceeded"}
 
     async def evaluate(self, query: str, snippets: List[str]) -> Dict[str, Any]:
         """
         Evaluates the relevance of snippets to the query using the LLM.
-        Returns a dictionary with score (0.0-1.0) and reasoning.
         """
         if not snippets:
             return {"score": 0.0, "reasoning": "No snippets provided."}
 
-        prompt = f"""
-        You are an expert search relevance judge. 
-        Your task is to evaluate the OVERALL quality of the returned search snippets for the user's query.
-
+        system_prompt = "You are an expert search relevance judge. Output ONLY valid JSON."
+        user_prompt = f"""
+        Task: Evaluate the OVERALL quality of the search snippets for the query.
+        
         User Query: "{query}"
 
         Search Snippets:
         {json.dumps(snippets, indent=2)}
 
         Instructions:
-        1. Analyze if the set of snippets contains information that directly answers the query.
-        2. Assign a SINGLE aggregate relevance score between 0.0 (completely irrelevant) and 1.0 (perfect answer).
-        3. Provide a brief reasoning for your score.
-        4. Output ONLY a SINGLE valid JSON object in the following format:
-        {{
-            "score": <float>,
-            "reasoning": "<string>"
-        }}
+        1. Analyze if snippets answer the query.
+        2. Assign a score 0.0 (irrelevant) to 1.0 (perfect).
+        3. Provide reasoning.
+        4. Output JSON: {{ "score": <float>, "reasoning": "<string>" }}
         """
-
-        retries = 3
-        base_delay = 15  # Seconds (Free tier bucket refill)
-
-        for attempt in range(retries + 1):
-            try:
-                # Run in a separate thread to avoid blocking asyncio loop (genai is sync)
-                response = await asyncio.to_thread(
-                    self.model.generate_content, 
-                    prompt,
-                    generation_config={"response_mime_type": "application/json"}
-                )
-                
-                result = json.loads(response.text)
-                
-                # Handle list output (sometimes model returns [ { ... } ])
-                if isinstance(result, list):
-                    if len(result) > 0 and isinstance(result[0], dict):
-                        result = result[0]
-                    else:
-                        return {"score": 0.0, "reasoning": "Invalid list format from LLM"}
-                        
-                return result
-            
-            except Exception as e:
-                is_rate_limit = "429" in str(e) or "quota" in str(e).lower()
-                if is_rate_limit:
-                    if attempt < retries:
-                        wait_time = base_delay * (attempt + 1)
-                        print(f"Rate limit hit for '{query}'. Retrying in {wait_time}s...")
-                        await asyncio.sleep(wait_time)
-                        continue
-                    else:
-                        return {"score": 0.0, "reasoning": f"Rate limit exceeded after retries: {str(e)}"}
-                
-                print(f"Error evaluating query '{query}': {e}")
-                return {"score": 0.0, "reasoning": f"Evaluation failed: {str(e)}"}
+        
+        messages = [
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": user_prompt}
+        ]
+        
+        return await self._call_api(messages)
 
     async def evaluate_credibility(self, query: str, results: List[Dict[str, Any]]) -> Dict[str, Any]:
         """
         Evaluates the credibility of the sources.
-        Returns a dictionary with score (0.0-1.0) and reasoning.
         """
         if not results:
             return {"score": 0.0, "reasoning": "No results provided."}
 
-        # Format sources for the prompt
         sources_text = []
         for i, res in enumerate(results):
             sources_text.append(f"Source {i+1}:\nURL: {res.get('link', 'N/A')}\nSnippet: {res.get('snippet', 'N/A')}\n")
         
         sources_str = "\n".join(sources_text)
 
-        prompt = f"""
-        You are an expert information quality judge.
-        Your task is to evaluate the CREDIBILITY of the sources retrieved for the user's query.
+        system_prompt = "You are an expert information quality judge. Output ONLY valid JSON."
+        user_prompt = f"""
+        Task: Evaluate the CREDIBILITY of the sources.
 
         User Query: "{query}"
 
@@ -112,41 +135,20 @@ class LLMJudge:
         {sources_str}
 
         Instructions:
-        1. Analyze the URLs (domain authority) and the content quality in the snippets.
-        2. Assign a SINGLE aggregate credibility score between 0.0 (low trust/spam) and 1.0 (highly authoritative/academic/verified news).
-        3. High scores: .gov, .edu, known news outlets, official documentation.
-        4. Low scores: random blogs, forums, unverified user content, spammy domains.
-        5. Provide a brief reasoning.
-        6. Output ONLY a SINGLE valid JSON object in the following format:
-        {{
-            "score": <float>,
-            "reasoning": "<string>"
-        }}
+        1. Analyze URLs (domain authority) and content quality.
+        2. Assign score 0.0 (low trust) to 1.0 (high trust/academic/news).
+        3. Provide reasoning.
+        4. Output JSON: {{ "score": <float>, "reasoning": "<string>" }}
         """
 
-        retries = 3
-        base_delay = 15
+        messages = [
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": user_prompt}
+        ]
 
-        for attempt in range(retries + 1):
-            try:
-                response = await asyncio.to_thread(
-                    self.model.generate_content, 
-                    prompt,
-                    generation_config={"response_mime_type": "application/json"}
-                )
-                result = json.loads(response.text)
-                if isinstance(result, list):
-                    result = result[0] if result else {"score": 0.0, "reasoning": "Empty list"}
-                return result
-            except Exception as e:
-                if "429" in str(e) or "quota" in str(e).lower():
-                    if attempt < retries:
-                        wait_time = base_delay * (attempt + 1)
-                        print(f"Credibility Rate limit hit for '{query}'. Retrying in {wait_time}s...")
-                        await asyncio.sleep(wait_time)
-                        continue
-                print(f"Error checking credibility for '{query}': {e}")
-                return {"score": 0.0, "reasoning": f"Error: {str(e)}"}
+        return await self._call_api(messages)
+
+
 
 async def run_query(client: httpx.AsyncClient, question: Dict[str, Any]) -> Dict[str, Any]:
     start_time = time.time()
@@ -260,13 +262,13 @@ def calculate_heuristic_score(query: str, results: List[Dict[str, Any]]) -> floa
     return min(total_score / len(results), 1.0) 
 
 async def main():
-    if not GEMINI_API_KEY:
-        print("WARNING: GEMINI_API_KEY not found in .env. Falling back to heuristic scoring ONLY.")
+    if not OPENROUTER_API_KEY:
+        print("WARNING: OPENROUTER_API_KEY not found in .env. Falling back to heuristic scoring ONLY.")
         judge = None
     else:
-        print(f"Initializing LLM Judge with model: gemini-2.0-flash...")
+        print(f"Initializing LLM Judge with model: anthropic/claude-opus-4.6 (OpenRouter)...")
         try:
-            judge = LLMJudge(api_key=GEMINI_API_KEY, model_name="gemini-2.0-flash")
+            judge = LLMJudge(api_key=OPENROUTER_API_KEY, model_name="anthropic/claude-opus-4.6")
         except Exception as e:
             print(f"Failed to initialize LLM Judge: {e}. Falling back to heuristic.")
             judge = None
@@ -378,7 +380,7 @@ async def main():
     avg_heuristic_score = statistics.mean(heuristic_scores) if heuristic_scores else 0
     
     print("\n" + "="*50)
-    print("EVALUATION REPORT (Gemini 2.0 Flash)")
+    print("EVALUATION REPORT (OpenRouter - Claude Opus 4.6)")
     print("="*50)
     print(f"Total Queries:      {len(dataset)}")
     print(f"Success Rate:       {len(successes)}/{len(dataset)} ({len(successes)/len(dataset)*100:.1f}%)")
