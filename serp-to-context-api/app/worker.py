@@ -12,6 +12,13 @@ from app.db.database import AsyncSessionLocal, init_db
 from app.db.repository import save_search_results
 from app.utils.logger import logger
 import httpx
+from prometheus_client import Counter
+
+TOKEN_USAGE = Counter(
+    "flux_token_usage_total",
+    "Total estimated token usage",
+    ["model", "context"]
+)
 
 
 POSTGRES_USER = os.getenv("POSTGRES_USER", "user")
@@ -137,6 +144,10 @@ def embed_task(
             return result
 
     query = result.get("query", "")
+    token_estimate = result.get("token_estimate", 0)
+    TOKEN_USAGE.labels(model="unknown", context="embedding_input").inc(token_estimate)
+    
+    # Generate Embeddings (CPU Intensive)
 
     # Generate Embeddings (CPU Intensive)
     if output_format and output_format.lower() in ["vector", "vectors"]:

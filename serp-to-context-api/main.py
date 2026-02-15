@@ -35,7 +35,32 @@ app: FastAPI = FastAPI(
 )
 
 from prometheus_fastapi_instrumentator import Instrumentator
-Instrumentator().instrument(app).expose(app)
+from prometheus_client import multiprocess, CollectorRegistry, CONTENT_TYPE_LATEST, generate_latest
+from fastapi.responses import Response
+
+def make_metrics_app():
+    registry = CollectorRegistry()
+    multiprocess.MultiProcessCollector(registry)
+    return registry
+
+@app.on_event("startup")
+async def startup_event():
+    # Clear multiprocess directory to remove zombie metrics
+    if "PROMETHEUS_MULTIPROC_DIR" in os.environ:
+        from shutil import rmtree
+        path = os.environ["PROMETHEUS_MULTIPROC_DIR"]
+        if os.path.exists(path):
+            rmtree(path)
+            os.makedirs(path)
+    logger.info("Application starting up...")
+
+@app.get("/metrics")
+async def metrics():
+    registry = make_metrics_app()
+    return Response(generate_latest(registry), media_type=CONTENT_TYPE_LATEST)
+
+instrumentator = Instrumentator()
+instrumentator.instrument(app)
 
 if os.path.isdir(STATIC_DIR):
     app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")

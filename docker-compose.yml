@@ -28,12 +28,14 @@ services:
       - POSTGRES_USER=${POSTGRES_USER:-user}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-password}
       - POSTGRES_DB=${POSTGRES_DB:-flux_db}
+      - PROMETHEUS_MULTIPROC_DIR=/prometheus_multiproc_dir
     depends_on:
       - redis
       - db
     volumes:
       - ./serp-to-context-api:/app/serp-to-context-api
       - ./.env:/app/.env
+      - prometheus_multiproc_data:/prometheus_multiproc_dir
     command: uvicorn serp-to-context-api.main:app --host 0.0.0.0 --port 8000 --reload
     networks:
       - app-network
@@ -57,12 +59,14 @@ services:
       - POSTGRES_USER=${POSTGRES_USER:-user}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-password}
       - POSTGRES_DB=${POSTGRES_DB:-flux_db}
+      - PROMETHEUS_MULTIPROC_DIR=/prometheus_multiproc_dir
     depends_on:
       - redis
       - db
     volumes:
       - ./serp-to-context-api:/app/serp-to-context-api
       - ./.env:/app/.env
+      - prometheus_multiproc_data:/prometheus_multiproc_dir
     networks:
       - app-network
 
@@ -85,12 +89,14 @@ services:
       - POSTGRES_USER=${POSTGRES_USER:-user}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-password}
       - POSTGRES_DB=${POSTGRES_DB:-flux_db}
+      - PROMETHEUS_MULTIPROC_DIR=/prometheus_multiproc_dir
     depends_on:
       - redis
       - db
     volumes:
       - ./serp-to-context-api:/app/serp-to-context-api
       - ./.env:/app/.env
+      - prometheus_multiproc_data:/prometheus_multiproc_dir
     networks:
       - app-network
 
@@ -152,6 +158,7 @@ volumes:
   postgres_data:
   prometheus_data:
   grafana_data:
+  prometheus_multiproc_data:
 
 
 networks:
