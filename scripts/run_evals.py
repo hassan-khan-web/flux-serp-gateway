@@ -16,7 +16,7 @@ OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
 OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions"
 
 class LLMJudge:
-    def __init__(self, api_key: str, model_name: str = "nvidia/nemotron-3-nano-30b-a3b:free"):
+    def __init__(self, api_key: str, model_name: str = "meta-llama/llama-3-8b-instruct:free"):
         self.api_key = api_key
         self.model_name = model_name
         self.headers = {
@@ -266,9 +266,9 @@ async def main():
         print("WARNING: OPENROUTER_API_KEY not found in .env. Falling back to heuristic scoring ONLY.")
         judge = None
     else:
-        print(f"Initializing LLM Judge with model: nvidia/nemotron-3-nano-30b-a3b:free (OpenRouter)...")
+        print(f"Initializing LLM Judge with model: meta-llama/llama-3-8b-instruct:free (OpenRouter)...")
         try:
-            judge = LLMJudge(api_key=OPENROUTER_API_KEY, model_name="nvidia/nemotron-3-nano-30b-a3b:free")
+            judge = LLMJudge(api_key=OPENROUTER_API_KEY, model_name="meta-llama/llama-3-8b-instruct:free")
         except Exception as e:
             print(f"Failed to initialize LLM Judge: {e}. Falling back to heuristic.")
             judge = None
