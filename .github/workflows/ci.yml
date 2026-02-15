@@ -161,7 +161,8 @@ jobs:
       - name: Build and push API image
         uses: docker/build-push-action@v4
         with:
-          context: .
+          context: ./backend
+          file: ./backend/Dockerfile
           push: true
           tags: ${{ steps.meta-api.outputs.tags }},ghcr.io/${{ github.repository }}/flux-api:latest
           labels: ${{ steps.meta-api.outputs.labels }}
