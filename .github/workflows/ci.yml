@@ -29,6 +29,15 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
 
     steps:
     - uses: actions/checkout@v3
@@ -44,7 +53,7 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         if [ -f backend/requirements.txt ]; then pip install -r backend/requirements.txt; fi
-        pip install flake8 pytest pytest-asyncio pytest-mock httpx pytest-cov coverage bandit safety pytest-github-actions-annotate-failures pytest-sugar
+        pip install flake8 pytest pytest-asyncio pytest-mock httpx pytest-cov coverage bandit safety pytest-github-actions-annotate-failures pytest-sugar uvicorn
 
     - name: Security Scan - Bandit
       run: |
@@ -91,6 +100,24 @@ jobs:
           --cov-fail-under=72 \
           --junitxml=test-results.xml \
           -v
+
+    - name: Run LLM Search Evaluations (Demo)
+      env:
+        OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+        REDIS_URL: redis://localhost:6379
+        DATABASE_URL: postgresql+asyncpg://test_user:test_pass@localhost:5432/test_db
+        TAVILY_API_KEY: ${{ secrets.TAVILY_API_KEY }}
+        PYTHONPATH: ${{ github.workspace }}/backend
+      run: |
+        # Start the API in background
+        PYTHONPATH=backend python -m uvicorn app.main:app --host 0.0.0.0 --port 8000 &
+        
+        # Wait for API to be ready
+        timeout 60s bash -c 'until curl -s http://localhost:8000/health; do sleep 2; done'
+        
+        # Run evals
+        python3 scripts/run_evals.py
+      continue-on-error: true
 
     - name: Upload Coverage Reports
       uses: actions/upload-artifact@v4

@@ -276,8 +276,10 @@ async def main():
     print(f"Loading dataset from {DATASET_PATH}...")
     try:
         with open(DATASET_PATH, "r") as f:
-            dataset = json.load(f)
-            print(f"FULL MODE: Processing all {len(dataset)} queries.")
+            full_dataset = json.load(f)
+            # DEMO LIMIT: Process only first 10 items to stay within free tier limits quickly
+            dataset = full_dataset[:10] 
+            print(f"DEMO MODE: Processing 10/{len(full_dataset)} queries for rapid verification.")
     except FileNotFoundError:
         print(f"Error: Dataset not found at {DATASET_PATH}")
         return
