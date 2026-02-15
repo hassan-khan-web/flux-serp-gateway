@@ -35,6 +35,12 @@ services:
 
   worker-io:
     build: .
+    hostname: worker-io
+    healthcheck:
+      test: ["CMD-SHELL", "celery -A app.worker.celery_app inspect ping -d celery@worker-io"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
     command: celery -A app.worker.celery_app worker --loglevel=info -Q scrapers --concurrency=10
     env_file:
       - .env
@@ -52,6 +58,12 @@ services:
 
   worker-cpu:
     build: .
+    hostname: worker-cpu
+    healthcheck:
+      test: ["CMD-SHELL", "celery -A app.worker.celery_app inspect ping -d celery@worker-cpu"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
     command: celery -A app.worker.celery_app worker --loglevel=info -Q embeddings --concurrency=2
     env_file:
       - .env

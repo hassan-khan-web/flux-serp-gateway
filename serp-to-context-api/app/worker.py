@@ -169,3 +169,7 @@ def embed_task(
     except Exception as e:
         logger.error(f"Embed task failed: {e}")
         return {"error": str(e)}
+
+@celery_app.task(name="app.worker.health_check")
+def health_check():
+    return "OK"
