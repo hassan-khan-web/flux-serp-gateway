@@ -1,0 +1,302 @@
+[
+    {
+        "id": 1,
+        "category": "factoid",
+        "difficulty": "easy",
+        "query": "What is the capital of France?"
+    },
+    {
+        "id": 2,
+        "category": "factoid",
+        "difficulty": "medium",
+        "query": "Who won the 2022 World Cup?"
+    },
+    {
+        "id": 3,
+        "category": "comparative",
+        "difficulty": "hard",
+        "query": "Compare the architecture of React vs Vue for enterprise apps"
+    },
+    {
+        "id": 4,
+        "category": "coding",
+        "difficulty": "medium",
+        "query": "How to center a div in CSS using flexbox"
+    },
+    {
+        "id": 5,
+        "category": "news",
+        "difficulty": "medium",
+        "query": "Latest developments in quantum computing 2025"
+    },
+    {
+        "id": 6,
+        "category": "creative",
+        "difficulty": "hard",
+        "query": "Generate a plot summary for a sci-fi movie set on Mars"
+    },
+    {
+        "id": 7,
+        "category": "factoid",
+        "difficulty": "easy",
+        "query": "How many continents are there?"
+    },
+    {
+        "id": 8,
+        "category": "comparative",
+        "difficulty": "medium",
+        "query": "Difference between machine learning and deep learning"
+    },
+    {
+        "id": 9,
+        "category": "coding",
+        "difficulty": "hard",
+        "query": "Explain the difference between optimistic and pessimistic locking in databases"
+    },
+    {
+        "id": 10,
+        "category": "news",
+        "difficulty": "medium",
+        "query": "Current stock price of NVIDIA"
+    },
+    {
+        "id": 11,
+        "category": "creative",
+        "difficulty": "hard",
+        "query": "Write a haiku about artificial intelligence"
+    },
+    {
+        "id": 12,
+        "category": "factoid",
+        "difficulty": "medium",
+        "query": "Who is the CEO of OpenAI?"
+    },
+    {
+        "id": 13,
+        "category": "comparative",
+        "difficulty": "medium",
+        "query": "Pros and cons of remote work vs office work"
+    },
+    {
+        "id": 14,
+        "category": "coding",
+        "difficulty": "easy",
+        "query": "Python list comprehension syntax"
+    },
+    {
+        "id": 15,
+        "category": "news",
+        "difficulty": "hard",
+        "query": "Impact of climate change on global agriculture in 2024"
+    },
+    {
+        "id": 16,
+        "category": "creative",
+        "difficulty": "medium",
+        "query": "Suggest 5 names for a new tech startup"
+    },
+    {
+        "id": 17,
+        "category": "factoid",
+        "difficulty": "hard",
+        "query": "What is the speed of light in vacuum?"
+    },
+    {
+        "id": 18,
+        "category": "comparative",
+        "difficulty": "hard",
+        "query": "SQL vs NoSQL databases for real-time analytics"
+    },
+    {
+        "id": 19,
+        "category": "coding",
+        "difficulty": "medium",
+        "query": "How to implement a binary search tree in Java"
+    },
+    {
+        "id": 20,
+        "category": "news",
+        "difficulty": "medium",
+        "query": "Results of the latest US presidential election polls"
+    },
+    {
+        "id": 21,
+        "category": "creative",
+        "difficulty": "easy",
+        "query": "Write a short poem about the ocean"
+    },
+    {
+        "id": 22,
+        "category": "factoid",
+        "difficulty": "medium",
+        "query": "When was the first iPhone released?"
+    },
+    {
+        "id": 23,
+        "category": "comparative",
+        "difficulty": "medium",
+        "query": "iOS vs Android development ecosystem comparison"
+    },
+    {
+        "id": 24,
+        "category": "coding",
+        "difficulty": "hard",
+        "query": "Debugging memory leaks in C++ applications"
+    },
+    {
+        "id": 25,
+        "category": "news",
+        "difficulty": "medium",
+        "query": "Upcoming space missions to the Moon"
+    },
+    {
+        "id": 26,
+        "category": "creative",
+        "difficulty": "hard",
+        "query": "Create a marketing slogan for a smart coffee mug"
+    },
+    {
+        "id": 27,
+        "category": "factoid",
+        "difficulty": "easy",
+        "query": "What is the chemical symbol for Gold?"
+    },
+    {
+        "id": 28,
+        "category": "comparative",
+        "difficulty": "medium",
+        "query": "Electric cars vs Hybrid cars environmental impact"
+    },
+    {
+        "id": 29,
+        "category": "coding",
+        "difficulty": "easy",
+        "query": "JavaScript arrow function syntax"
+    },
+    {
+        "id": 30,
+        "category": "news",
+        "difficulty": "hard",
+        "query": "Global economic forecast for 2026"
+    },
+    {
+        "id": 31,
+        "category": "creative",
+        "difficulty": "medium",
+        "query": "Write a dialogue between two robots discussing humanity"
+    },
+    {
+        "id": 32,
+        "category": "factoid",
+        "difficulty": "medium",
+        "query": "Who painted the Mona Lisa?"
+    },
+    {
+        "id": 33,
+        "category": "comparative",
+        "difficulty": "hard",
+        "query": "Docker vs Kubernetes for container orchestration"
+    },
+    {
+        "id": 34,
+        "category": "coding",
+        "difficulty": "medium",
+        "query": "How to use async await in JavaScript"
+    },
+    {
+        "id": 35,
+        "category": "news",
+        "difficulty": "medium",
+        "query": "Top technology trends in 2025"
+    },
+    {
+        "id": 36,
+        "category": "creative",
+        "difficulty": "easy",
+        "query": "Describe a sunset in three sentences"
+    },
+    {
+        "id": 37,
+        "category": "factoid",
+        "difficulty": "hard",
+        "query": "What represents the letter 'A' in ASCII?"
+    },
+    {
+        "id": 38,
+        "category": "comparative",
+        "difficulty": "medium",
+        "query": "Functional programming vs Object-oriented programming"
+    },
+    {
+        "id": 39,
+        "category": "coding",
+        "difficulty": "hard",
+        "query": "Optimizing SQL queries for large datasets"
+    },
+    {
+        "id": 40,
+        "category": "news",
+        "difficulty": "medium",
+        "query": "Updates on renewable energy adoption worldwide"
+    },
+    {
+        "id": 41,
+        "category": "creative",
+        "difficulty": "hard",
+        "query": "Concept for a video game about time travel"
+    },
+    {
+        "id": 42,
+        "category": "factoid",
+        "difficulty": "easy",
+        "query": "What is the largest planet in our solar system?"
+    },
+    {
+        "id": 43,
+        "category": "comparative",
+        "difficulty": "medium",
+        "query": "Laptop vs Tablet for university students"
+    },
+    {
+        "id": 44,
+        "category": "coding",
+        "difficulty": "medium",
+        "query": "Python decorators explained with examples"
+    },
+    {
+        "id": 45,
+        "category": "news",
+        "difficulty": "hard",
+        "query": "Policy changes in EU AI regulation"
+    },
+    {
+        "id": 46,
+        "category": "creative",
+        "difficulty": "medium",
+        "query": "Write a short story about a lost key"
+    },
+    {
+        "id": 47,
+        "category": "factoid",
+        "difficulty": "medium",
+        "query": "Who discovered penicillin?"
+    },
+    {
+        "id": 48,
+        "category": "comparative",
+        "difficulty": "hard",
+        "query": "Monolith vs Microservices architecture pros and cons"
+    },
+    {
+        "id": 49,
+        "category": "coding",
+        "difficulty": "easy",
+        "query": "HTML5 semantic tags list"
+    },
+    {
+        "id": 50,
+        "category": "news",
+        "difficulty": "medium",
+        "query": "Best performing stocks in the S&P 500 this year"
+    }
+]

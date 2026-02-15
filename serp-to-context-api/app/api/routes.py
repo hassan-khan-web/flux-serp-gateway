@@ -1,3 +1,4 @@
+import os
 from typing import Any
 from fastapi import APIRouter, HTTPException, Depends
 from fastapi_limiter.depends import RateLimiter
@@ -9,7 +10,10 @@ from app.utils.logger import logger
 
 router: APIRouter = APIRouter()
 
-@router.post("/search", response_model=TaskResponse, status_code=202, dependencies=[Depends(RateLimiter(times=5, seconds=60))])
+RATE_LIMIT_TIMES = int(os.getenv("RATE_LIMIT_TIMES", "5"))
+RATE_LIMIT_SECONDS = int(os.getenv("RATE_LIMIT_SECONDS", "60"))
+
+@router.post("/search", response_model=TaskResponse, status_code=202, dependencies=[Depends(RateLimiter(times=RATE_LIMIT_TIMES, seconds=RATE_LIMIT_SECONDS))])
 async def search_endpoint(request: SearchRequest) -> TaskResponse:
     try:
         # Chain the tasks: Scrape -> Embed
