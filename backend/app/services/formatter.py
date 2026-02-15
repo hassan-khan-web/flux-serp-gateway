@@ -71,7 +71,9 @@ class FormatterService:
 
             md.append(f"### {idx}. {res.get('title', 'No Title')} {score_label}")
             md.append(f"URL: {res.get('url', 'No URL')}")
-            md.append(f"Snippet: {res.get('snippet', '')}\n")
+            
+            content = res.get('full_content') or res.get('snippet', '')
+            md.append(f"Content: {content}\n")
 
         return "\n".join(md)
 

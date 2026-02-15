@@ -117,6 +117,31 @@ def scrape_task(
 
     formatted_data = formatter.format_response(query, parsed_data)
 
+    # Phase 1.5: Deep Scrape Enrichment (Parallel)
+    if mode != "scrape" and formatted_data.get("organic_results"):
+        logger.info("Enriching organic results with deep scraping...")
+        urls = [res.get("url") for res in formatted_data["organic_results"] if res.get("url")]
+        
+        if urls:
+            try:
+                # Limit URLs to avoid massive parallel overhead if user requested 50
+                urls_to_scrape = urls[:10] 
+                raw_contents = loop.run_until_complete(scraper.scrape_multiple_urls(urls_to_scrape))
+                
+                for i, raw in enumerate(raw_contents):
+                    if raw:
+                        # Parse and filter full content using trafilatura logic
+                        enriched = parser.parse_url_content(raw)
+                        # Store in the result
+                        if enriched["organic_results"]:
+                            text = enriched["organic_results"][0].get("snippet", "")
+                            formatted_data["organic_results"][i]["full_content"] = text
+                            # Also update snippet if snippet was too short before
+                            if len(text) > len(formatted_data["organic_results"][i].get("snippet", "")):
+                                formatted_data["organic_results"][i]["snippet"] = text[:300] + "..."
+            except Exception as e:
+                logger.error("Deep scrape enrichment failed: %s", e)
+
     result = {
         "query": query,
         "ai_overview": formatted_data["ai_overview"],

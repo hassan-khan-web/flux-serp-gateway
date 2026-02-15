@@ -1,14 +1,13 @@
 import os
 import random
 import time
+import asyncio
 import urllib.parse
-from typing import Any, Dict, Optional, Union
+from typing import Any, Dict, List, Optional, Union
 
 import httpx
 from app.utils.logger import logger
 from prometheus_client import Counter, Histogram
-
-
 
 SCRAPE_REQUESTS = Counter(
     "flux_scrape_requests_total",
@@ -21,8 +20,6 @@ SCRAPE_DURATION = Histogram(
     "Histogram of scrape duration",
     ["provider"]
 )
-
-
 
 USER_AGENTS = [
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
@@ -119,6 +116,11 @@ class ScraperService:
 
         return html
 
+    async def scrape_multiple_urls(self, urls: List[str]) -> List[Optional[Union[str, Dict]]]:
+        """Scrapes multiple URLs in parallel."""
+        tasks = [self.scrape_url(url) for url in urls]
+        return await asyncio.gather(*tasks)
+
     async def fetch_results(self, query: str, region: str = "us", language: str = "en", limit: int = 10) -> Optional[Union[str, Dict]]:
         params = {"q": query, "gl": region, "hl": language, "num": limit}
         search_url = f"https://www.google.com/search?{urllib.parse.urlencode(params)}"
@@ -128,7 +130,6 @@ class ScraperService:
             if data: return data
 
         html = None
-
         debug_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "debug.html")
 
         if self.scrapingbee_key:
@@ -140,7 +141,6 @@ class ScraperService:
             if html and self._is_valid_html(html): return html
 
         res = await self._fetch_direct(search_url)
-
         final_html = html if html else res
         if final_html:
             try:
@@ -231,9 +231,6 @@ class ScraperService:
         return None
 
     def _is_valid_html(self, html: Optional[str]) -> bool:
-        if not html:
-            return False
-
         if not html:
             return False
 
