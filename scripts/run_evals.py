@@ -16,7 +16,7 @@ OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
 OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions"
 
 class LLMJudge:
-    def __init__(self, api_key: str, model_name: str = "anthropic/claude-opus-4.6"):
+    def __init__(self, api_key: str, model_name: str = "nvidia/nemotron-3-nano-30b-a3b:free"):
         self.api_key = api_key
         self.model_name = model_name
         self.headers = {
@@ -266,9 +266,9 @@ async def main():
         print("WARNING: OPENROUTER_API_KEY not found in .env. Falling back to heuristic scoring ONLY.")
         judge = None
     else:
-        print(f"Initializing LLM Judge with model: anthropic/claude-opus-4.6 (OpenRouter)...")
+        print(f"Initializing LLM Judge with model: nvidia/nemotron-3-nano-30b-a3b:free (OpenRouter)...")
         try:
-            judge = LLMJudge(api_key=OPENROUTER_API_KEY, model_name="anthropic/claude-opus-4.6")
+            judge = LLMJudge(api_key=OPENROUTER_API_KEY, model_name="nvidia/nemotron-3-nano-30b-a3b:free")
         except Exception as e:
             print(f"Failed to initialize LLM Judge: {e}. Falling back to heuristic.")
             judge = None
@@ -301,8 +301,8 @@ async def main():
     print("\nStarting Evaluation Phase...")
     evaluated_results = []
     
-    # Process evaluation sequentially (or small batches) to avoid rate limits
-    eval_batch_size = 1
+    # Process evaluation in batches
+    eval_batch_size = 5
     for i in range(0, len(results), eval_batch_size):
         batch = results[i:i + eval_batch_size]
         eval_tasks = []
@@ -365,7 +365,7 @@ async def main():
             
         print(f"Evaluated {min(i + eval_batch_size, len(results))}/{len(results)} queries...")
         if judge:
-            await asyncio.sleep(10) # Protect LLM Rate Limits (10s delay between queries)
+            await asyncio.sleep(2) # Protect Rate Limits
 
     # Aggregation
     successes = [r for r in evaluated_results if r["status"] == "success"]
@@ -380,7 +380,7 @@ async def main():
     avg_heuristic_score = statistics.mean(heuristic_scores) if heuristic_scores else 0
     
     print("\n" + "="*50)
-    print("EVALUATION REPORT (OpenRouter - Claude Opus 4.6)")
+    print("EVALUATION REPORT (OpenRouter - Nemotron-3 Free)")
     print("="*50)
     print(f"Total Queries:      {len(dataset)}")
     print(f"Success Rate:       {len(successes)}/{len(dataset)} ({len(successes)/len(dataset)*100:.1f}%)")
