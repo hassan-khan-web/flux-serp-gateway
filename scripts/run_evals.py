@@ -16,7 +16,7 @@ DATASET_PATH = "backend/tests/evals/dataset.json"
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 
 class LLMJudge:
-    def __init__(self, api_key: str, model_name: str = "gemini-2.5-flash"):
+    def __init__(self, api_key: str, model_name: str = "gemini-2.0-flash"):
         self.api_key = api_key
         self.model_name = model_name
         genai.configure(api_key=self.api_key)
@@ -264,9 +264,9 @@ async def main():
         print("WARNING: GEMINI_API_KEY not found in .env. Falling back to heuristic scoring ONLY.")
         judge = None
     else:
-        print(f"Initializing LLM Judge with model: gemini-2.5-flash...")
+        print(f"Initializing LLM Judge with model: gemini-2.0-flash...")
         try:
-            judge = LLMJudge(api_key=GEMINI_API_KEY, model_name="gemini-2.5-flash")
+            judge = LLMJudge(api_key=GEMINI_API_KEY, model_name="gemini-2.0-flash")
         except Exception as e:
             print(f"Failed to initialize LLM Judge: {e}. Falling back to heuristic.")
             judge = None
@@ -378,7 +378,7 @@ async def main():
     avg_heuristic_score = statistics.mean(heuristic_scores) if heuristic_scores else 0
     
     print("\n" + "="*50)
-    print("EVALUATION REPORT (Gemini 2.5 Flash)")
+    print("EVALUATION REPORT (Gemini 2.0 Flash)")
     print("="*50)
     print(f"Total Queries:      {len(dataset)}")
     print(f"Success Rate:       {len(successes)}/{len(dataset)} ({len(successes)/len(dataset)*100:.1f}%)")
